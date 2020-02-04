@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
@@ -15,41 +16,67 @@ import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.search_view_layout.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.newFixedThreadPoolContext
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
+import ru.skillbranch.skillarticles.extensions.dpToPx
+import ru.skillbranch.skillarticles.extensions.setMarginOptionally
+import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
-import ru.skillbranch.skillarticles.viewmodels.Notify
-import ru.skillbranch.skillarticles.viewmodels.ViewModelFactory
+import ru.skillbranch.skillarticles.viewmodels.base.Notify
+import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 
-class RootActivity : AppCompatActivity() {
+class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
-    private lateinit var viewModel: ArticleViewModel
+    override val layout: Int = R.layout.activity_root
+    override lateinit var viewModel: ArticleViewModel
+
     private var isSearching = false // режим поиска
     private var searchQuery: String? = null // строка поиска
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_root)
-        setupToolbar()
-        setupBottombar()
-        setupSubmenu()
 
-        val vmFactory = ViewModelFactory("0")
+        val vmFactory =
+            ViewModelFactory("0")
         viewModel = ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
         // Подпишемся на данные ViewModel-и
         viewModel.observeState(this) {
             renderUi(it)
-//            if (it.isSearch) {
-//                isSearching = true
-//                searchQuery = it.searchQuery
-//            }
         }
         // Подпишемся на нотификации
         viewModel.observeNotifications(this) { renderNotifications(it) }
+    }
+
+    override fun setupViews() {
+        setupToolbar()
+        setupBottombar()
+        setupSubmenu()
+    }
+
+    override fun renderSearchResult(searchResult: List<Pair<Int, Int>>) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun renderSearchPosition(searchPosition: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun clearSearchResult() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun showSearchBar() {
+        bottombar.setSearchState(true)
+        // Необходимо добавить отступ снизу чтобы мы могли пролистать до низа весь контент (не перекрывать его панелью поиска)
+        scroll.setMarginOptionally(bottom=dpToIntPx(56))
+    }
+
+    override fun hideSearchBar() {
+        bottombar.setSearchState(false)
+        // Убрать отступ снизу
+        scroll.setMarginOptionally(bottom=dpToIntPx(0))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -167,7 +194,9 @@ class RootActivity : AppCompatActivity() {
     private fun renderUi(data: ArticleState) { // Отображаем изменения в data (мы на них подписались)
 
         // Передача состояния поиска
-        bottombar.setSearchState(data.isSearch)
+        //bottombar.setSearchState(data.isSearch)
+        Log.e("RootActivity", "renderUI $data")
+        if(data.isSearch) showSearchBar() else hideSearchBar()
 
         // bind submenu state
         btn_settings.isChecked = data.isShowMenu

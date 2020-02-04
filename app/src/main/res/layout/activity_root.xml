@@ -20,14 +20,15 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:theme="@style/ArticleBarsTheme"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-
+            style="@style/ArticleToolbar"
             app:logo="@drawable/logo_placeholder"
             app:title="@string/app_name"
             app:subtitle="loading..."
             app:layout_scrollFlags="scroll|enterAlwaysCollapsed"
             android:elevation="4dp"/>
+
     </com.google.android.material.appbar.AppBarLayout>
 <!--        layout_behavior - при скроллинге будет сворачивать appbar-->
     <androidx.core.widget.NestedScrollView
@@ -43,7 +44,11 @@
 
     </androidx.core.widget.NestedScrollView>
 
-<!--    У которых выставлен insetEdget='bottom' - не могут замещаться dodgeInsetEdges="bottom"-->
+<!--    У которых выставлен insetEdget='bottom' - не могут замещаться dodgeInsetEdges="bottom"
+https://stackoverflow.com/questions/55234488/bottomnavigationview-hidden-by-default-after-adding-scroll-behaviour
+добавляем app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
+для прокрутки со скроллом
+-->
     <ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu
         android:id="@+id/submenu"
         android:theme="@style/ArticleBarsTheme"
@@ -55,7 +60,9 @@
         android:layout_marginBottom="8dp"
         app:layout_dodgeInsetEdges="bottom"
         android:visibility="gone"
-        tools:visibility="visible"/>
+        tools:visibility="visible"        />
+<!--        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"-->
+
     <ru.skillbranch.skillarticles.ui.custom.Bottombar
         android:id="@+id/bottombar"
         android:layout_width="match_parent"
@@ -63,6 +70,7 @@
         android:layout_gravity="bottom"
         android:theme="@style/ArticleBarsTheme"
         android:elevation="4dp"
-        app:layout_insetEdge="bottom"
-        />
+        app:layout_insetEdge="bottom"/>
+<!--        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"-->
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

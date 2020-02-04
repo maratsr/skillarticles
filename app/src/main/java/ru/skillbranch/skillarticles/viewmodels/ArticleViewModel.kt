@@ -8,7 +8,7 @@ import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
 
-class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleState>(ArticleState()) {
+class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleState>(ArticleState()), IArticleViewModel {
     private val repository = ArticleRepository
 
     init {
@@ -19,6 +19,7 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
                 title = article.title,
                 category = article.category,
                 categoryIcon = article.categoryIcon,
+                author = article.author,
                 date = article.date.format()
             )
         }
@@ -48,38 +49,37 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
         }
     }
 
-    // 3 приватных метода трансформируеют observable в livedata
-    //load text from network
-    private fun getArticleContent(): LiveData<List<Any>?> {
+    // 3 метода трансформируеют observable в livedata
+    // load text from network
+    override  fun getArticleContent(): LiveData<List<Any>?> {
         return repository.loadArticleContent(articleId)
     }
 
     //load data from db
-    private fun getArticleData(): LiveData<ArticleData?> {
+    override fun getArticleData(): LiveData<ArticleData?> {
         return repository.getArticle(articleId)
     }
 
     //load data from db
-    private fun getArticlePersonalInfo(): LiveData<ArticlePersonalInfo?> {
+    override fun getArticlePersonalInfo(): LiveData<ArticlePersonalInfo?> {
         return repository.loadArticlePersonalInfo(articleId)
-
     }
 
-    fun handleUpText() {
+    override fun handleUpText() {
         repository.updateSettings(currentState.toAppSettings().copy(isBigText = true))
     }
 
-    fun handleDownText() {
+    override fun handleDownText() {
         repository.updateSettings(currentState.toAppSettings().copy(isBigText = false))
     }
 
-    fun handleNightMode() {
+    override fun handleNightMode() {
         val settings = currentState.toAppSettings()
         // При этом MediatorLiveData узнает об изменении состояния -> изменит общ состояния и UI
         repository.updateSettings(settings.copy(isDarkMode = !settings.isDarkMode))
     }
 
-    fun handleLike() {
+    override fun handleLike() {
         //updateState { it.copy(isLike = !it.isLike) }
         val toggleLike = { // Функция обработки
             val info = currentState.toArticlePersonalInfo()
@@ -99,18 +99,38 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
         notify(msg)
     }
 
-    fun handleBookmart() {
-        updateState { it.copy(isBookmark = !it.isBookmark) }
+    override fun handleBookmark() {
+        val info = currentState.toArticlePersonalInfo()
+        repository.updateArticlePersonalInfo(info.copy(isBookmark = !info.isBookmark))
+
+        notify( Notify.TextMessage(
+            if (!info.isBookmark) "Add to bookmarks" else "Remove from bookmarks"))
     }
 
-    fun handleShare() { // Обработка нажатия на share
+    override fun handleShare() { // Обработка нажатия на share
         val msg = "Share is not implemented"
-        notify(Notify.ErrorMessage(msg, "Ok", null))
+        notify(Notify.ErrorMessage(msg, "OK", null))
 
     }
 
-    fun handleToggleMenu() {
+    override fun handleToggleMenu() {
         updateState { it.copy(isShowMenu = !it.isShowMenu) } // используем copy - меняя значение
+    }
+
+    override fun handleSearchMode(isSearch: Boolean) {
+        updateState { it.copy(isSearch = isSearch)}
+    }
+
+    override fun handleSearch(query: String?) {
+        updateState { it.copy(searchQuery = query) }
+    }
+
+    fun handleUpResult() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    fun handleDownResult() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 }
@@ -125,7 +145,7 @@ data class ArticleState(
     val isBigText: Boolean = false, // шрифт увеличен
     val isDarkMode: Boolean = false, // темный режим
     val isSearch: Boolean = false, // режим поиска
-    val isSearchQuery: String? = null, // поисковый запрос
+    val searchQuery: String? = null, // поисковый запрос
     val searchResult: List<Pair<Int, Int>> = emptyList(), //результаты поиска( стартовая и конечные позиции)
     val searchPosition: Int = 0, // текущая позиция найденного результата
     val shareLink: String? = null, // ссылка Share

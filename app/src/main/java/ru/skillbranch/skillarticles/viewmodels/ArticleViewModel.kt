@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.viewmodels
 
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
@@ -8,6 +9,7 @@ import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
+import ru.skillbranch.skillarticles.extensions.indexesOf
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
@@ -122,19 +124,26 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
     }
 
     override fun handleSearchMode(isSearch: Boolean) {
-        updateState { it.copy(isSearch = isSearch)}
+        updateState { it.copy(isSearch = isSearch, isShowMenu = false, searchPosition = 0)}
     }
 
     override fun handleSearch(query: String?) {
-        updateState { it.copy(searchQuery = query) }
+        query ?: return
+        var result = (currentState.content.firstOrNull() as String).indexesOf(query)
+            .map{it to it + query.length}
+        updateState { it.copy(searchQuery = query, searchResults = result, searchPosition = 0) } // обновил
     }
 
     fun handleUpResult() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        updateState{
+            it.copy(searchPosition = it.searchPosition.dec())
+        }
     }
 
     fun handleDownResult() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        updateState{
+            it.copy(searchPosition = it.searchPosition.inc())}
+
     }
 
 }
@@ -150,7 +159,7 @@ data class ArticleState(
     val isDarkMode: Boolean = false, // темный режим
     val isSearch: Boolean = false, // режим поиска
     val searchQuery: String? = null, // поисковый запрос
-    val searchResult: List<Pair<Int, Int>> = emptyList(), //результаты поиска( стартовая и конечные позиции)
+    val searchResults: List<Pair<Int, Int>> = emptyList(), //результаты поиска( стартовая и конечные позиции)
     val searchPosition: Int = 0, // текущая позиция найденного результата
     val shareLink: String? = null, // ссылка Share
     val title: String? = null, // заголовок статьи
@@ -163,10 +172,21 @@ data class ArticleState(
     val reviews: List<Any> = emptyList() // комментарии
 ) : IViewModelState {
     override fun save(outState: Bundle) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        outState.putAll(
+            bundleOf(
+                "isSearch" to isSearch,
+                "searchQuery" to searchQuery,
+                "searchResults" to searchResults,
+                "searchPosition" to searchPosition)
+
+            )
     }
 
-    override fun restore(savedState: Bundle): IViewModelState {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun restore(savedState: Bundle): ArticleState {
+        return copy(
+            isSearch = savedState["isSearch"] as Boolean,
+            searchQuery = savedState["searchQuery"] as? String,
+            searchResults = savedState["searchResults"] as List<Pair<Int,Int>>,
+            searchPosition = savedState["searchPosition"] as Int)
     }
 }

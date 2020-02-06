@@ -49,9 +49,10 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    private val bgColor by AttrValue(R.attr.colorSecondary) // ранее было  Color.RED
+    val bgColor by AttrValue(R.attr.colorSecondary) // ранее было  Color.RED
+
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    private val fgColor by AttrValue(R.attr.colorOnSecondary) // = Color.WHITE
+    val fgColor by AttrValue(R.attr.colorOnSecondary) // = Color.WHITE
 
     override fun setupViews() {
         setupToolbar()

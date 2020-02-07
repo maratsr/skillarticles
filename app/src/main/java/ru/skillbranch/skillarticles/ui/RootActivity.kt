@@ -34,6 +34,7 @@ import ru.skillbranch.skillarticles.viewmodels.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
+import ru.skillbranch.skillarticles.viewmodels.base.ViewModelDelegate
 import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 
@@ -43,10 +44,14 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     public override val binding: ArticleBinding by lazy { ArticleBinding() }
 
     override val layout: Int = R.layout.activity_root
-    override val viewModel: ArticleViewModel by lazy {
-        val vmFactory = ViewModelFactory("0")
-        ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
-    }
+//    override val viewModel: ArticleViewModel by lazy {
+//        val vmFactory = ViewModelFactory("0")
+//        ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
+//    }
+
+    override val viewModel: ArticleViewModel by provideViewModel("0")
+
+    internal inline fun provideViewModel(arg : Any?) = ViewModelDelegate(ArticleViewModel::class.java, arg)
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val bgColor by AttrValue(R.attr.colorSecondary) // ранее было  Color.RED

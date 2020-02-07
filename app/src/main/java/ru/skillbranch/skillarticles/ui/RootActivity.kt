@@ -51,8 +51,6 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     override val viewModel: ArticleViewModel by provideViewModel("0")
 
-    internal inline fun provideViewModel(arg : Any?) = ViewModelDelegate(ArticleViewModel::class.java, arg)
-
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val bgColor by AttrValue(R.attr.colorSecondary) // ранее было  Color.RED
 

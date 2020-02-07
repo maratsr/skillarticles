@@ -35,7 +35,6 @@ import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 import ru.skillbranch.skillarticles.viewmodels.base.ViewModelDelegate
-import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 
 
 class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
@@ -49,6 +48,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 //        ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
 //    }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     override val viewModel: ArticleViewModel by provideViewModel("0")
 
     internal inline fun provideViewModel(arg : Any?) = ViewModelDelegate(ArticleViewModel::class.java, arg)

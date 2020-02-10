@@ -2,7 +2,6 @@ package ru.skillbranch.skillarticles.viewmodels.base
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -15,7 +14,6 @@ import kotlin.reflect.KProperty
 //Реализуй в классе BaseActivity инлайн функцию
 //internal inline fun provideViewModel(arg : Any?) : ViewModelDelegate - возвращающую экземпляр делегата ViewModelDelegate
 class ViewModelDelegate<T : ViewModel>(private val clazz: Class<T>, private val arg: Any?): ReadOnlyProperty<FragmentActivity, T> {
-
     private var value: T? = null
     override fun getValue(thisRef: FragmentActivity, property: KProperty<*>): T {
         return if (value == null) {

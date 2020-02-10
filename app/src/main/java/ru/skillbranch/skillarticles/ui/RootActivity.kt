@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.text.getSpans
-import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
@@ -34,7 +33,6 @@ import ru.skillbranch.skillarticles.viewmodels.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
-import ru.skillbranch.skillarticles.viewmodels.base.ViewModelDelegate
 
 
 class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
@@ -43,6 +41,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
     public override val binding: ArticleBinding by lazy { ArticleBinding() }
 
     override val layout: Int = R.layout.activity_root
+
 //    override val viewModel: ArticleViewModel by lazy {
 //        val vmFactory = ViewModelFactory("0")
 //        ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)

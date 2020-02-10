@@ -6,7 +6,7 @@ import androidx.preference.PreferenceManager
 
 class PrefManager(context: Context): PreferenceManager(context) {
 
-    val preferences  : SharedPreferences = sharedPreferences
+     val preferences  : SharedPreferences = sharedPreferences
 //
 //            by lazy {
 //        getDefaultSharedPreferences(context)

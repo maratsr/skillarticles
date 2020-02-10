@@ -27,16 +27,16 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
     }
 
     override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
-        with(thisRef.preferences.edit()) {
+        this.value = value
+        with(thisRef.sharedPreferences.edit()) {
             when (value) {
-                is Boolean -> putBoolean(property.name, value)
-                is Float -> putFloat(property.name, value)
-                is Long -> putLong(property.name, value)
-                is Int -> putInt(property.name, value)
-                is String -> putString(property.name, value)
+                is Boolean -> putBoolean(property.name, value).apply()
+                is Float -> putFloat(property.name, value).apply()
+                is Long -> putLong(property.name, value).apply()
+                is Int -> putInt(property.name, value).apply()
+                is String -> putString(property.name, value).apply()
                 else -> throw NotImplementedError("Wrong type of value. Only Boolean, Float, Long, Int, String types are possible!")
             }
-            commit()
         }
     }
 }

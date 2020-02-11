@@ -1,7 +1,6 @@
 package ru.skillbranch.skillarticles.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
@@ -67,13 +66,11 @@ class RootActivity : AppCompatActivity() {
             setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                     viewModel.handleSearchMode(true)
-                    Log.d("onMenuItemActionExpand", "searching=$isSearching query=$searchQuery")
                     return true
                 }
 
                 override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
                     viewModel.handleSearchMode(false)
-                    Log.d("onMenuItemActionColla", "searching=$isSearching query=$searchQuery")
                     return true
                 }
             })
@@ -83,14 +80,12 @@ class RootActivity : AppCompatActivity() {
             setOnQueryTextListener(object : OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     viewModel.handleSearch(query)
-                    Log.d("onQueryTextSubmit", "searching=$isSearching query=$searchQuery")
                     return true
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
                     viewModel.handleSearch(newText)
                     searchQuery = newText
-                    Log.d("onQueryTextChange", "searching=$isSearching query=$searchQuery")
                     return true
                 }
             })

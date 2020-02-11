@@ -18,16 +18,16 @@ import kotlin.reflect.KProperty
 //И метод fun clearAll() - очищающий все сохраненные значения SharedPreferences приложения.
 //Использовать PrefManager из androidx (import androidx.preference.PreferenceManager)
 class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManager, T?> {
-    private var value: T? = null
+    private var storedValue: T? = null
     override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
-        return if (value == null) {
-            value = defaultValue
-            value
-        } else value
+        return if (storedValue == null) {
+            storedValue = defaultValue
+            storedValue
+        } else storedValue
     }
 
     override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
-        this.value = value
+        this.storedValue = value
         with( thisRef.preferences.edit()) {
             when (value) {
                 is Boolean -> putBoolean(property.name, value).apply()

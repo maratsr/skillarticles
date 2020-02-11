@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
@@ -15,8 +16,6 @@ import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import kotlinx.android.synthetic.main.layout_submenu.*
 import kotlinx.android.synthetic.main.search_view_layout.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.newFixedThreadPoolContext
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.viewmodels.ArticleState
@@ -43,10 +42,10 @@ class RootActivity : AppCompatActivity() {
         // Подпишемся на данные ViewModel-и
         viewModel.observeState(this) {
             renderUi(it)
-//            if (it.isSearch) {
-//                isSearching = true
-//                searchQuery = it.searchQuery
-//            }
+            if (it.isSearch) {
+                isSearching = true
+                searchQuery = it.searchQuery
+            }
         }
         // Подпишемся на нотификации
         viewModel.observeNotifications(this) { renderNotifications(it) }
@@ -68,33 +67,34 @@ class RootActivity : AppCompatActivity() {
             setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
                     viewModel.handleSearchMode(true)
+                    Log.d("onMenuItemActionExpand", "searching=$isSearching query=$searchQuery")
                     return true
                 }
 
                 override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
                     viewModel.handleSearchMode(false)
+                    Log.d("onMenuItemActionColla", "searching=$isSearching query=$searchQuery")
                     return true
                 }
             })
-            //if (viewModel.currentState.isSearch)  expandActionView() // Если был режим поиска - восстановим
         }
 
         with( menu.findItem(R.id.action_search).actionView as SearchView) {
             setOnQueryTextListener(object : OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     viewModel.handleSearch(query)
+                    Log.d("onQueryTextSubmit", "searching=$isSearching query=$searchQuery")
                     return true
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
                     viewModel.handleSearch(newText)
+                    searchQuery = newText
+                    Log.d("onQueryTextChange", "searching=$isSearching query=$searchQuery")
                     return true
                 }
             })
-            //maxWidth = 9999
-            //if (viewModel.currentState.isSearch) setQuery(viewModel.currentState.searchQuery, false) // Если был режим поиска - восстановим
         }
-
         return super.onCreateOptionsMenu(menu)
     }
 

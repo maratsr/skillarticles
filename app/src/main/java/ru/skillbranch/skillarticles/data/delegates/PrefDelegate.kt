@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.data.delegates
 
+import android.util.Log
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -18,8 +19,10 @@ import kotlin.reflect.KProperty
 //И метод fun clearAll() - очищающий все сохраненные значения SharedPreferences приложения.
 //Использовать PrefManager из androidx (import androidx.preference.PreferenceManager)
 class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManager, T?> {
-//    private var storedValue: T? = null
+    //private var storedValue: T? = null
     override fun getValue(thisRef: PrefManager, property: KProperty<*>): T? {
+        if  (thisRef.preferences.all[property.name] == null)
+            setValue(thisRef, property, defaultValue)
         return thisRef.preferences.all[property.name] as T?
 //        return if (storedValue == null) {
 //            storedValue = defaultValue
@@ -28,14 +31,14 @@ class PrefDelegate<T>(private val defaultValue: T) : ReadWriteProperty<PrefManag
     }
 
     override fun setValue(thisRef: PrefManager, property: KProperty<*>, value: T?) {
-//        this.storedValue = value
-        with( thisRef.preferences.edit()) {
-            when (value) {
-                is Boolean -> putBoolean(property.name, value).apply()
-                is Float -> putFloat(property.name, value).apply()
-                is Long -> putLong(property.name, value).apply()
-                is Int -> putInt(property.name, value).apply()
-                is String -> putString(property.name, value).apply()
+        val valueR:T = value?: defaultValue
+        with(thisRef.preferences.edit()) {
+            when (valueR) {
+                is Boolean -> putBoolean(property.name, valueR).apply()
+                is Float -> putFloat(property.name, valueR).apply()
+                is Long -> putLong(property.name, valueR).apply()
+                is Int -> putInt(property.name, valueR).apply()
+                is String -> putString(property.name, valueR).apply()
                 else -> throw NotImplementedError("Wrong type of value. Only Boolean, Float, Long, Int, String types are possible!")
             }
         }

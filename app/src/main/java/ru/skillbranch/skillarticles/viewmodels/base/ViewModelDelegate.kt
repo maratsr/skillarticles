@@ -14,13 +14,21 @@ import kotlin.reflect.KProperty
 //Реализуй в классе BaseActivity инлайн функцию
 //internal inline fun provideViewModel(arg : Any?) : ViewModelDelegate - возвращающую экземпляр делегата ViewModelDelegate
 class ViewModelDelegate<T : ViewModel>(private val clazz: Class<T>, private val arg: Any?): ReadOnlyProperty<FragmentActivity, T> {
-    private var value: T? = null
+//    private var value: T? = null
+//    override fun getValue(thisRef: FragmentActivity, property: KProperty<*>): T {
+//        return if (value == null) {
+//            val vmFactory = ViewModelFactory(arg!!)
+//            value = ViewModelProviders.of(thisRef, vmFactory).get(clazz)
+//            value!!
+//        } else value!!
+//   }
+    private lateinit var value: T
     override fun getValue(thisRef: FragmentActivity, property: KProperty<*>): T {
-        return if (value == null) {
-            val vmFactory = ViewModelFactory(arg!!)
-            value = ViewModelProviders.of(thisRef, vmFactory).get(clazz)
-            value!!
-        } else value!!
+        if (!::value.isInitialized) value = when(arg) {
+            null -> ViewModelProviders.of(thisRef).get(clazz)
+            else -> ViewModelProviders.of(thisRef, ViewModelFactory(arg)).get(clazz)
+        }
+        return value
     }
 
 }

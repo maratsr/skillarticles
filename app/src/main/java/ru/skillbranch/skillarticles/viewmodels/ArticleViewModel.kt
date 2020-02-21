@@ -57,7 +57,7 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
 
     // 3 метода трансформируеют observable в livedata
     // load text from network
-    override  fun getArticleContent(): LiveData<List<Any>?> {
+    override  fun getArticleContent(): LiveData<String?> {
         return repository.loadArticleContent(articleId)
     }
 
@@ -129,7 +129,7 @@ class ArticleViewModel(private val articleId: String): BaseViewModel<ArticleStat
 
     override fun handleSearch(query: String?) {
         query ?: return
-        var result = (currentState.content.firstOrNull() as String).indexesOf(query)
+        var result = currentState.content.indexesOf(query)
             .map{it to it + query.length}
         updateState { it.copy(searchQuery = query, searchResults = result, searchPosition = 0) } // обновил
     }
@@ -168,7 +168,7 @@ data class ArticleState(
     val date: String? = null, // дата публикации
     val author: Any? = null, // автор публикации
     val poster: Any? = null, // обложка статьи
-    val content: List<Any> = emptyList(), // контент
+    val content: String? = null, // контент
     val reviews: List<Any> = emptyList() // комментарии
 ) : IViewModelState {
     override fun save(outState: Bundle) {

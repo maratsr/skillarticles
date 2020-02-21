@@ -60,13 +60,13 @@ object LocalDataHolder {
 
 object NetworkDataHolder {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    val content = MutableLiveData<List<Any>?>(null)
+    val content = MutableLiveData<String?>(null)
     private var isDelay = true
 
-    fun loadArticleContent(articleId: String): LiveData<List<Any>?> {
+    fun loadArticleContent(articleId: String): LiveData<String?> {
         GlobalScope.launch {
             if (isDelay) delay(5000)
-            content.postValue(listOf(longText))
+            content.postValue(longText)
         }
         return content
     }

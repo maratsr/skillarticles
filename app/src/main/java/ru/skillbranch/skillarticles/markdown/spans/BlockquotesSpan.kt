@@ -21,15 +21,32 @@ class BlockquotesSpan(
         lineTop: Int, lineBaseline: Int, lineBottom: Int, text: CharSequence?, lineStart: Int,
         lineEnd: Int, isFirstLine: Boolean, layout: Layout?
     ) {
-        //TODO implement me
+        paint.withCustomColor {
+            canvas.drawLine(
+                quoteWidth/2f,
+                lineTop.toFloat(),
+                quoteWidth/2f,
+                lineBottom.toFloat(),
+                paint
+            )
+        }
     }
 
     override fun getLeadingMargin(first: Boolean): Int {
-        //TODO implement me
-        return 0
+        return (quoteWidth + gapWidth).toInt()
     }
 
     private inline fun Paint.withCustomColor(block: () -> Unit) {
-        //TODO implement me
+        val oldColor = color
+        val oldStyle = style
+        val oldWidth = strokeWidth
+        color = lineColor
+        style = Paint.Style.STROKE // просто линия
+        strokeWidth = quoteWidth
+        block()
+        // Восстановим старый цвет - чтобы bullet цветом не продолжил рисовать прочие элементы
+        strokeWidth = oldWidth
+        color = oldColor
+        style = oldStyle
     }
 }

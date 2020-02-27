@@ -32,7 +32,6 @@ object MarkdownParser {
      * parse markdown text to elements
      */
     fun parse(string: String): MarkdownText { // Парсит элементы разметки
-        //TODO implement me
         val elements = mutableListOf<Element>()
         elements.addAll(findElements(string))
         return MarkdownText(elements)
@@ -42,15 +41,27 @@ object MarkdownParser {
      * clear markdown text to string without markdown characters
      */
     fun clear(string: String?): String? {
-        //TODO implement me
-        return null // Строка без markdown символов (для поиска по тексту)
+        string ?: return null
+        var clearedString = ""
+        for(elm in findElements(string))
+            clearedString += getSimple(elm)
+        return clearedString // Строка без markdown символов (для поиска по тексту)
+    }
+
+    private fun getSimple(element: Element): String {
+        var bufferString = ""
+        if (element.elements.isEmpty())
+            return element.text.toString()
+        else
+            for(e in element.elements)
+                bufferString += getSimple(e)
+        return bufferString
     }
 
     /**
      * find markdown elements in markdown text
      */
     private fun findElements(string: CharSequence): List<Element> {
-        //TODO implement me
         val parents = mutableListOf<Element>()
         val matcher = elementsPattern.matcher(string)
         var lastStartIndex = 0
@@ -146,78 +157,6 @@ object MarkdownParser {
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
-            }
-        }
-
-        if(lastStartIndex<string.length) { // проверка после последнего вхождения, если там что то есть - то простой текст
-            val text = string.subSequence(lastStartIndex, string.length)
-            parents.add(Element.Text(text))
-        }
-
-        return parents
-
-        /*
-        loop@ while () {
-            //TODO implement me
-            //groups range for iterate by groups (1..9) or (1..11) optionally
-            val groups = 1..11
-            when () {
-                //NOT FOUND -> BREAK
-                -1 -> break@loop
-
-                //UNORDERED LIST
-                1 -> {
-                    //text without "*. "
-                    //TODO implement me
-                }
-
-                //HEADER
-                2 -> {
-                    //text without "{#} "
-                    //TODO implement me
-                }
-
-                //QUOTE
-                3 -> {
-                    //text without "> "
-                    //TODO implement me
-                }
-
-                //ITALIC
-                4 -> {
-                    //text without "*{}*"
-                    //TODO implement me
-                }
-
-                //BOLD
-                5 -> {
-                    //text without "**{}**"
-                    //TODO implement me
-                }
-
-                //STRIKE
-                6 -> {
-                    //text without "~~{}~~"
-                    //TODO implement me
-                }
-
-                //RULE
-                7 -> {
-                    //text without "***" insert empty character
-                    //TODO implement me
-                }
-
-                //RULE
-                8 -> {
-                    //text without "`{}`"
-                    //TODO implement me
-                }
-
-                //LINK
-                9 -> {
-                    //full text for regex
-                    //TODO implement me
-                }
                 //10 -> BLOCK CODE - optionally
                 10 -> {
                     //TODO implement me
@@ -228,10 +167,13 @@ object MarkdownParser {
                     //TODO implement me
                 }
             }
-
         }
-        */
-        //TODO implement me
+
+        if(lastStartIndex<string.length) { // проверка после последнего вхождения, если там что то есть - то простой текст
+            val text = string.subSequence(lastStartIndex, string.length)
+            parents.add(Element.Text(text))
+        }
+        return parents
     }
 }
 

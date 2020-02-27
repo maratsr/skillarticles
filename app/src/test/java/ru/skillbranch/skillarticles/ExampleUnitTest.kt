@@ -112,6 +112,16 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun clearedTest() {
+        val actual = MarkdownParser.clear(markdownString)
+        assertEquals(markdownClearString, actual)
+        println("result=\n$actual")
+        println()
+        println("waited=\n$markdownClearString")
+
+    }
+
+    @Test
     fun parse_link() {
         val result = MarkdownParser.parse(linkString)
         val actual = prepare<Element.Link>(result.elements)

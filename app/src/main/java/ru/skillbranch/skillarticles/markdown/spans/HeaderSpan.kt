@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.markdown.spans
 
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.text.Layout
 import android.text.Spanned
@@ -55,8 +56,18 @@ class HeaderSpan constructor(
         val spanStart = text.getSpanStart(this)
         val spanEnd = text.getSpanEnd(this)
         if (spanStart == start) {// Это первая строка
+            originAscent = fm.ascent
             fm.ascent = (fm.ascent - marginTop).toInt()
+        } else { // не первая линия
+            fm.ascent = originAscent // отступ делаем только от первой линии, для остальных восстанавливаем
         }
+
+        if (spanEnd == end.dec()) {// Это последняя линия (dec - чтобы не учитывать разделитель
+            val originHeight = fm.descent
+            fm.descent = (originHeight -linePadding + marginBottom).toInt()
+        }
+        fm.top = fm.ascent
+        fm.bottom = fm.ascent
     }
 
     override fun updateMeasureState(paint: TextPaint) {
@@ -80,16 +91,19 @@ class HeaderSpan constructor(
         lineEnd: Int, isFirstLine: Boolean, layout: Layout?
     ) {
         if ((level == 1 || level == 2) && (text as Spanned).getSpanEnd(this) == lineEnd) { // Для заголовков 1-2 уровня и последней строки - рисуем отделяющую линию
-            val lh = (paint.descent() - paint.ascent())*sizes.getOrElse(level) {1f}
-            val lineOffset = lineBaseline + lh*linePadding
-            canvas.drawLine(
-                0f,
-                lineOffset,
-                canvas.width.toFloat(),
-                lineOffset,
-                paint
-            )
+            paint.forLine {
+                val lh = (paint.descent() - paint.ascent()) * sizes.getOrElse(level) { 1f }
+                val lineOffset = lineBaseline + lh * linePadding
+                canvas.drawLine(
+                    0f,
+                    lineOffset,
+                    canvas.width.toFloat(),
+                    lineOffset,
+                    paint
+                )
+            }
         }
+        //canvas.drawFontLines(lineTop, lineBottom, lineBaseline, paint)
     }
 
     override fun getLeadingMargin(first: Boolean): Int {
@@ -109,5 +123,17 @@ class HeaderSpan constructor(
         strokeWidth = oldWidth
         color = oldColor
         style = oldStyle
+    }
+
+    // Визуальный контроль отступов для текста
+    private fun Canvas.drawFontLines( top: Int, bottom: Int, lineBaseline: Int, paint: Paint) {
+        drawLine(0f, top+0f, width+0f, top+0f, Paint().apply { color = Color.BLUE })
+        drawLine(0f, bottom+0f, width+0f, bottom+0f, Paint().apply { color = Color.GREEN })
+        drawLine(0f, lineBaseline+0f, width+0f, lineBaseline+0f, Paint().apply { color = Color.RED })
+//        drawLine(0f, paint.ascent()+0f, width+0f, paint.ascent()+0f, Paint().apply { color = Color.GREEN })
+//        drawLine(0f, paint.descent()+0f, width+0f, paint.descent()+0f, Paint().apply { color = Color.RED })
+
+//        drawLine(0f, paint.fontMetrics.ascent+0f, width+0f, paint.fontMetrics.ascent+0f, Paint().apply { color = Color.MAGENTA })
+//        drawLine(0f, paint.descent()+lineBaseline+0f, width+0f, paint.descent()+lineBaseline+0f, Paint().apply { color = Color.BLACK })
     }
 }

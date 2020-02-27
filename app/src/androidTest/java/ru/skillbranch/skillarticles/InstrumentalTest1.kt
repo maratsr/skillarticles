@@ -209,7 +209,7 @@ class InstrumentedTest1 {
     fun draw_rule() {
         //settings
         val color = Color.RED
-        val width = 24f
+        val width = 24f // ширина разделительной линии
 
         //defaults
         val canvasWidth = 700
@@ -235,9 +235,9 @@ class InstrumentedTest1 {
 
         val inOrder = inOrder(paint, canvas)
 
-        inOrder.verify(paint).color = color
+        inOrder.verify(paint).color = color // проверка цвета
 
-        inOrder.verify(canvas).drawLine(
+        inOrder.verify(canvas).drawLine( // проверка отрисовки линии
             0f,
             (ltop + lbottom) / 2f,
             canvasWidth.toFloat(),
@@ -274,7 +274,7 @@ class InstrumentedTest1 {
         val paint = mock(Paint::class.java)
         `when`(paint.color).thenReturn(defaultColor)
         `when`(
-            paint.measureText(
+            paint.measureText( // измерить ширину шрифта
                 ArgumentMatchers.anyString(),
                 ArgumentMatchers.anyInt(),
                 ArgumentMatchers.anyInt()
@@ -346,7 +346,7 @@ class InstrumentedTest1 {
         fm.ascent = defaultAscent
         fm.descent = defaultDescent
 
-        //spy
+        //spy - объекты, реальная имплементация класса
         val linkDrawable: Drawable = spy(VectorDrawable())
         val path: Path = spy(Path())
 
@@ -354,7 +354,7 @@ class InstrumentedTest1 {
 
         val span = IconLinkSpan(linkDrawable, iconColor, padding, textColor)
         text.setSpan(span, 0, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        span.path = path
+        span.path = path // подставляем spy объект
 
         //check measure size
         val size = span.getSize(paint, text, 0, text.length, fm)
@@ -367,12 +367,12 @@ class InstrumentedTest1 {
         //check draw icon and text
         span.draw(canvas, text, 0, text.length, cml.toFloat(), ltop, lbase, lbottom, paint)
 
-        val inOrder = inOrder(paint, canvas, path, linkDrawable)
+        val inOrder = inOrder(paint, canvas, path, linkDrawable) // список проверяемых
 
         //check path effect
-        verify(paint, atLeastOnce()).pathEffect = any()
-        verify(paint, atLeastOnce()).strokeWidth = 0f
-        inOrder.verify(paint).color = textColor
+        verify(paint, atLeastOnce()).pathEffect = any() // есть хотя бы один pathEffect
+        verify(paint, atLeastOnce()).strokeWidth = 0f // хотя бы один раз изменил толщину линии до 0 (прерывистая линия)
+        inOrder.verify(paint).color = textColor // была смена цвета
 
         //check reset path
         inOrder.verify(path).reset() //check reset before draw
@@ -383,16 +383,16 @@ class InstrumentedTest1 {
         inOrder.verify(canvas).drawPath(path, paint)
 
         //check draw icon
-        inOrder.verify(canvas).save()
-        inOrder.verify(canvas).translate(
+        inOrder.verify(canvas).save() // сохраняет текущую канву
+        inOrder.verify(canvas).translate( // перемещаем
             cml.toFloat(),
             (lbottom - linkDrawable.bounds.bottom).toFloat()
         )
-        inOrder.verify(linkDrawable).draw(canvas)
-        inOrder.verify(canvas).restore()
+        inOrder.verify(linkDrawable).draw(canvas) // отрисовываем в нужном положении иконку (draw не учитывает смещения, поэтому сами ранее сдвинули)
+        inOrder.verify(canvas).restore() // Возвращаем на место канву
 
         //check draw text
-        inOrder.verify(paint).color = textColor
+        inOrder.verify(paint).color = textColor // Проверяем цвет отрисовки
         inOrder.verify(canvas).drawText(
             text,
             0,
@@ -401,7 +401,7 @@ class InstrumentedTest1 {
             lbase.toFloat(),
             paint
         )
-        inOrder.verify(paint).color = defaultColor
+        inOrder.verify(paint).color = defaultColor // и после отрисовки цвет восстановлен
     }
 
 

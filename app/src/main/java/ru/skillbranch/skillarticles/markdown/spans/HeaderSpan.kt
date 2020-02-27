@@ -63,7 +63,7 @@ class HeaderSpan constructor(
         }
 
         if (spanEnd == end.dec()) {// Это последняя линия (dec - чтобы не учитывать разделитель
-            val originHeight = fm.descent
+            val originHeight = fm.descent-originAscent
             fm.descent = (originHeight -linePadding + marginBottom).toInt()
         }
         fm.top = fm.ascent
@@ -107,7 +107,6 @@ class HeaderSpan constructor(
     }
 
     override fun getLeadingMargin(first: Boolean): Int {
-        //TODO implement me
         return 0
     }
 

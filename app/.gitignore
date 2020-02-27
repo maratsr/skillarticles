@@ -1,5 +1,3 @@
 /build
 /libs
-/src/androidTest
-/src/test
 proguard-rules.pro

@@ -21,8 +21,8 @@ class OrderedListSpan(
 ) : LeadingMarginSpan {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     override fun getLeadingMargin(first: Boolean): Int {
-        //return order.length * gapWidth.toInt()
-        return gapWidth.toInt() + offset
+        return order.length * gapWidth.toInt()
+        //return gapWidth.toInt() + offset
     }
 
     private var offset: Int =0

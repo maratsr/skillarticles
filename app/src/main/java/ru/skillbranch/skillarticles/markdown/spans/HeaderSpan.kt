@@ -50,11 +50,13 @@ class HeaderSpan constructor(
         lineHeight: Int,
         fm: Paint.FontMetricsInt?
     ) {
+
         fm ?: return
         text as Spanned
 
         val spanStart = text.getSpanStart(this)
         val spanEnd = text.getSpanEnd(this)
+
         if (spanStart == start) {// Это первая строка
             originAscent = fm.ascent
             fm.ascent = (fm.ascent - marginTop).toInt()
@@ -63,11 +65,11 @@ class HeaderSpan constructor(
         }
 
         if (spanEnd == end.dec()) {// Это последняя линия (dec - чтобы не учитывать разделитель
-            val originHeight = fm.descent-originAscent
-            fm.descent = (originHeight -linePadding + marginBottom).toInt()
+            val originHeight = fm.descent - originAscent
+            fm.descent = (originHeight * linePadding + marginBottom).toInt()
         }
         fm.top = fm.ascent
-        fm.bottom = fm.ascent
+        fm.bottom = fm.descent
     }
 
     override fun updateMeasureState(paint: TextPaint) {
@@ -114,14 +116,16 @@ class HeaderSpan constructor(
         val oldColor = color
         val oldStyle = style
         val oldWidth = strokeWidth
+
         color = dividerColor
         style = Paint.Style.STROKE // просто линия
         strokeWidth = 0f
+
         block()
         // Восстановим старый цвет - чтобы bullet цветом не продолжил рисовать прочие элементы
-        strokeWidth = oldWidth
         color = oldColor
         style = oldStyle
+        strokeWidth = oldWidth
     }
 
     // Визуальный контроль отступов для текста

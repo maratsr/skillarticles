@@ -43,8 +43,8 @@ class IconLinkSpan(
         val textStart= x + iconSize + padding
         paint.forLine { // подч
             path.reset() // сбрасываем
-            path.moveTo(textStart, bottom.toFloat() ) // Смещаемся до позиции после иконки
-            path.lineTo(textStart + textWidth, bottom.toFloat() ) // Линия до конца текста
+            path.moveTo(textStart, bottom.toFloat()) // Смещаемся до позиции после иконки
+            path.lineTo(textStart + textWidth, bottom.toFloat()) // Линия до конца текста
             canvas.drawPath(path, paint)
         }
 
@@ -92,22 +92,23 @@ class IconLinkSpan(
 
         block()
         // Восстановим старый цвет - чтобы bullet цветом не продолжил рисовать прочие элементы
-        strokeWidth = oldWidth
         color = oldColor
         style = oldStyle
+        strokeWidth = oldWidth
     }
 
     private inline fun Paint.forText(block: () -> Unit) {
         val oldColor = color
-
+        color = textColor
         block()
-
         color = oldColor
     }
 
     private inline fun Paint.forIcon(block: () -> Unit) {
         val oldColor = color
         val oldStyle = style
+        color = textColor
+        style = Paint.Style.STROKE // просто линия
 
         block()
 

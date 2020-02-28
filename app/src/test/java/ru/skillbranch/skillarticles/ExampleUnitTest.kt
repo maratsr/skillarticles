@@ -118,8 +118,18 @@ class ExampleUnitTest {
         println("result=\n$actual")
         println()
         println("waited=\n$markdownClearString")
-
     }
+
+    @Test
+    fun clearedTestFull() {
+        val actual = MarkdownParser.clear(markdownString)
+        println(actual)
+        assertEquals(markdownOptionallyClearString, actual)
+        println("result=\n$actual")
+        println()
+        println("waited=\n$markdownOptionallyClearString")
+    }
+
 
     @Test
     fun parse_link() {

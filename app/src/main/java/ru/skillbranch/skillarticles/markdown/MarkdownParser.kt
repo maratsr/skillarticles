@@ -16,15 +16,12 @@ object MarkdownParser {
     private const val RULE_GROUP = "(^[-_*]{3}$)" // --- ___ *** - горизонтальный разделитель
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))" //текст окруженный ` штрихом)
     private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|\\[*?]\\(.*?\\))"  // ссылка [title](url) [I`am yandex link](https://www.yandex.ru)
-    private const val BLOCK_CODE_GROUP = "" //TODO implement me
-    private const val ORDER_LIST_GROUP = "" //TODO implement me
+    private const val BLOCK_CODE_GROUP = "(^```[\\S\\s]*?```)"//"(^```[\\s\\S]+```$)"
+    private const val ORDER_LIST_GROUP = "(^\\d+\\. .+$)"
 
     //result regex
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
-            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP"
-//    private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
-//            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP"
-    //|$BLOCK_CODE_GROUP|$ORDER_LIST_GROUP optionally
+            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP|$BLOCK_CODE_GROUP|$ORDER_LIST_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
@@ -76,7 +73,7 @@ object MarkdownParser {
             }
 
             var text: CharSequence
-            val groups = 1..9 // Смотрим под какие типы markdown-а подходит
+            val groups = 1..11 // Смотрим под какие типы markdown-а подходит
             var group = -1
             for(gr in groups) {
                 if (matcher.group(gr) != null) {
@@ -159,12 +156,20 @@ object MarkdownParser {
                 }
                 //10 -> BLOCK CODE - optionally
                 10 -> {
-                    //TODO implement me
+                    text = string.subSequence(startIndex.plus(3),endIndex.plus(-3)) // Текст между `
+                    val element = Element.BlockCode(text=text)
+                    parents.add(element)
+                    lastStartIndex = endIndex
                 }
 
                 //11 -> NUMERIC LIST
                 11 -> {
-                    //TODO implement me
+                    text = string.subSequence(startIndex,endIndex)
+                    val (order:String, content: String) = "(\\d+)\\. (.*)".toRegex().find(text)!!.destructured
+                    val subelements = findElements(content)
+                    val element = Element.OrderedListItem(order, content, subelements)
+                    parents.add(element)
+                    lastStartIndex = endIndex
                 }
             }
         }

@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.markdown
 
+import android.util.Log
 import java.util.regex.Pattern
 
 object MarkdownParser {
@@ -156,9 +157,24 @@ object MarkdownParser {
                 }
                 //10 -> BLOCK CODE - optionally
                 10 -> {
-                    text = string.subSequence(startIndex.plus(3),endIndex.plus(-3)) // Текст между `
-                    val element = Element.BlockCode(text=text)
-                    parents.add(element)
+                    text = string.subSequence(startIndex.plus(3),endIndex.plus(-3)) // Текст между ```
+                    val strings = text.toString().split("\n")
+
+                    if (strings.size==1) {
+                        val element = Element.BlockCode(text=text, type=Element.BlockCode.Type.SINGLE)
+                        parents.add(element)
+                    } else {
+                        val eStart = Element.BlockCode(text=strings.first(), type=Element.BlockCode.Type.START)
+                        parents.add(eStart)
+                        parents.add(Element.Text("\n"))
+                        (1..(strings.size-2)).forEach {
+                            val eMid = Element.BlockCode(text=strings[it], type=Element.BlockCode.Type.MIDDLE)
+                            parents.add(eMid)
+                            parents.add(Element.Text("\n"))
+                        }
+                        val eEnd = Element.BlockCode(text=strings.last(), type=Element.BlockCode.Type.END)
+                        parents.add(eEnd)
+                    }
                     lastStartIndex = endIndex
                 }
 

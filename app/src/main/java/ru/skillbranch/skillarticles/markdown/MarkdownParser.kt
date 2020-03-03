@@ -164,13 +164,13 @@ object MarkdownParser {
                         val element = Element.BlockCode(text=text, type=Element.BlockCode.Type.SINGLE)
                         parents.add(element)
                     } else {
-                        val eStart = Element.BlockCode(text=strings.first(), type=Element.BlockCode.Type.START)
+                        val eStart = Element.BlockCode(text=strings.first()+"\n", type=Element.BlockCode.Type.START)
                         parents.add(eStart)
-                        parents.add(Element.Text("\n"))
+                        //parents.add(Element.Text("\n"))
                         (1..(strings.size-2)).forEach {
-                            val eMid = Element.BlockCode(text=strings[it], type=Element.BlockCode.Type.MIDDLE)
+                            val eMid = Element.BlockCode(text=strings[it]+"\n", type=Element.BlockCode.Type.MIDDLE)
                             parents.add(eMid)
-                            parents.add(Element.Text("\n"))
+                            //parents.add(Element.Text("\n"))
                         }
                         val eEnd = Element.BlockCode(text=strings.last(), type=Element.BlockCode.Type.END)
                         parents.add(eEnd)

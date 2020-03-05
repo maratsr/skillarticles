@@ -48,12 +48,9 @@ object MarkdownParser {
 
     private fun getSimple(element: Element): String {
         var bufferString = ""
-        if (element.elements.isEmpty())
-            return element.text.toString()
-        else
-            for(e in element.elements)
-                bufferString += getSimple(e)
-        return bufferString
+        for(e in element.elements)
+            bufferString += getSimple(e)
+        return if (element.elements.isEmpty()) element.text.toString() else bufferString
     }
 
     /**
@@ -171,24 +168,6 @@ object MarkdownParser {
                         }
 
                     } else parents.add(Element.BlockCode(Element.BlockCode.Type.SINGLE, text))
-
-//                    val strings = text.toString().split("\n")
-//
-//                    if (strings.size==1) {
-//                        val element = Element.BlockCode(text=text, type=Element.BlockCode.Type.SINGLE)
-//                        parents.add(element)
-//                    } else {
-//                        val eStart = Element.BlockCode(text="${strings.first()}\n", type=Element.BlockCode.Type.START)
-//                        parents.add(eStart)
-//                        //parents.add(Element.Text("\n"))
-//                        (1..(strings.size-2)).forEach {
-//                            val eMid = Element.BlockCode(text="${strings[it]}\n", type=Element.BlockCode.Type.MIDDLE)
-//                            parents.add(eMid)
-//                            //parents.add(Element.Text("\n"))
-//                        }
-//                        val eEnd = Element.BlockCode(text=strings.last(), type=Element.BlockCode.Type.END)
-//                        parents.add(eEnd)
-//                    }
                     lastStartIndex = endIndex
                 }
 
@@ -199,12 +178,6 @@ object MarkdownParser {
                     text = string.subSequence(startIndex.plus(order.length.inc()), endIndex).toString()
                     val subs = findElements(text)
                     parents.add(Element.OrderedListItem(order, text.toString(), subs))
-
-//                    text = string.subSequence(startIndex,endIndex)
-//                    val (order:String, content: String) = "(\\d+\\.) (.*)".toRegex().find(text)!!.destructured
-//                    val subelements = findElements(content)
-//                    val element = Element.OrderedListItem(order, content, subelements)
-//                    parents.add(element)
                     lastStartIndex = endIndex
                 }
             }

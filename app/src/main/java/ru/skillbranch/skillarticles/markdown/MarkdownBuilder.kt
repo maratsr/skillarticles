@@ -16,8 +16,6 @@ import ru.skillbranch.skillarticles.extensions.dpToPx
 import ru.skillbranch.skillarticles.extensions.attrValue
 import ru.skillbranch.skillarticles.markdown.spans.*
 
-//import ru.skillbranch.skillarticles.markdown.spans.*
-
 class MarkdownBuilder(context: Context) {
     private val colorSecondary = context.attrValue(R.attr.colorSecondary)
     private val colorPrimary = context.attrValue(R.attr.colorPrimary)

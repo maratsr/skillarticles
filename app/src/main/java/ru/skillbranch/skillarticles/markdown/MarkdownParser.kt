@@ -5,7 +5,7 @@ import java.util.regex.Pattern
 
 object MarkdownParser {
 
-    private val LINE_SEPARATOR = "\n" // System.getProperty("line.separator") ?: \n
+    private val LINE_SEPARATOR =  System.getProperty("line.separator") ?: "\n"
 
     //group regex
     private const val UNORDERED_LIST_ITEM_GROUP = "(^[*+-] .+$)" // ненумерованный список имеет формать +-* пробел текст
@@ -17,8 +17,8 @@ object MarkdownParser {
     private const val RULE_GROUP = "(^[-_*]{3}$)" // --- ___ *** - горизонтальный разделитель
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))" //текст окруженный ` штрихом)
     private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|\\[*?]\\(.*?\\))"  // ссылка [title](url) [I`am yandex link](https://www.yandex.ru)
-    private const val BLOCK_CODE_GROUP = "(^```[\\S\\s]*?```)"//"(^```[\\s\\S]+```$)"
-    private const val ORDER_LIST_GROUP = "(^\\d+\\. .+$)"
+    private const val BLOCK_CODE_GROUP = "(^```[\\S\\s]+?```)"//"(^```[\\s\\S]+```$)"
+    private const val ORDER_LIST_GROUP = "(^\\d{1,2}\\.\\s.+?$)"
 
     //result regex
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
@@ -158,33 +158,53 @@ object MarkdownParser {
                 //10 -> BLOCK CODE - optionally
                 10 -> {
                     text = string.subSequence(startIndex.plus(3),endIndex.plus(-3)) // Текст между ```
-                    val strings = text.toString().split("\n")
-
-                    if (strings.size==1) {
-                        val element = Element.BlockCode(text=text, type=Element.BlockCode.Type.SINGLE)
-                        parents.add(element)
-                    } else {
-                        val eStart = Element.BlockCode(text="${strings.first()}\n", type=Element.BlockCode.Type.START)
-                        parents.add(eStart)
-                        //parents.add(Element.Text("\n"))
-                        (1..(strings.size-2)).forEach {
-                            val eMid = Element.BlockCode(text="${strings[it]}\n", type=Element.BlockCode.Type.MIDDLE)
-                            parents.add(eMid)
-                            //parents.add(Element.Text("\n"))
+                    if (text.contains(LINE_SEPARATOR)) {
+                        for ((index, line) in text.lines().withIndex()) {
+                            when (index) {
+                                text.lines().lastIndex ->
+                                    parents.add(Element.BlockCode(Element.BlockCode.Type.END, line))
+                                0 ->
+                                    parents.add(Element.BlockCode(Element.BlockCode.Type.START, line + LINE_SEPARATOR))
+                                else ->
+                                    parents.add(Element.BlockCode(Element.BlockCode.Type.MIDDLE, line + LINE_SEPARATOR))
+                            }
                         }
-                        val eEnd = Element.BlockCode(text=strings.last(), type=Element.BlockCode.Type.END)
-                        parents.add(eEnd)
-                    }
+
+                    } else parents.add(Element.BlockCode(Element.BlockCode.Type.SINGLE, text))
+
+//                    val strings = text.toString().split("\n")
+//
+//                    if (strings.size==1) {
+//                        val element = Element.BlockCode(text=text, type=Element.BlockCode.Type.SINGLE)
+//                        parents.add(element)
+//                    } else {
+//                        val eStart = Element.BlockCode(text="${strings.first()}\n", type=Element.BlockCode.Type.START)
+//                        parents.add(eStart)
+//                        //parents.add(Element.Text("\n"))
+//                        (1..(strings.size-2)).forEach {
+//                            val eMid = Element.BlockCode(text="${strings[it]}\n", type=Element.BlockCode.Type.MIDDLE)
+//                            parents.add(eMid)
+//                            //parents.add(Element.Text("\n"))
+//                        }
+//                        val eEnd = Element.BlockCode(text=strings.last(), type=Element.BlockCode.Type.END)
+//                        parents.add(eEnd)
+//                    }
                     lastStartIndex = endIndex
                 }
 
                 //11 -> NUMERIC LIST
                 11 -> {
-                    text = string.subSequence(startIndex,endIndex)
-                    val (order:String, content: String) = "(\\d+\\.) (.*)".toRegex().find(text)!!.destructured
-                    val subelements = findElements(content)
-                    val element = Element.OrderedListItem(order, content, subelements)
-                    parents.add(element)
+                    val reg = "(^\\d{1,2}.)".toRegex().find(string.substring(startIndex, endIndex))
+                    val order = reg!!.value
+                    text = string.subSequence(startIndex.plus(order.length.inc()), endIndex).toString()
+                    val subs = findElements(text)
+                    parents.add(Element.OrderedListItem(order, text.toString(), subs))
+
+//                    text = string.subSequence(startIndex,endIndex)
+//                    val (order:String, content: String) = "(\\d+\\.) (.*)".toRegex().find(text)!!.destructured
+//                    val subelements = findElements(content)
+//                    val element = Element.OrderedListItem(order, content, subelements)
+//                    parents.add(element)
                     lastStartIndex = endIndex
                 }
             }

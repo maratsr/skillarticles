@@ -25,7 +25,7 @@ class OrderedListSpan(
         //return gapWidth.toInt() + offset
     }
 
-    private var offset: Int =0
+//    private var offset: Int =0
 
     override fun drawLeadingMargin(
         canvas: Canvas, paint: Paint, currentMarginLocation: Int, paragraphDirection: Int,
@@ -44,25 +44,23 @@ class OrderedListSpan(
 
                 canvas.drawText(
                     order,
-                    gapWidth + currentMarginLocation.toFloat(),
+                    gapWidth + currentMarginLocation,
                     lineBaseline.toFloat(),
                     paint
                 )
             }
-            offset = paint.measureText(order + " ").toInt()
-
         }
     }
 
     private inline fun Paint.withCustomColor(block: () -> Unit) {
         val oldColor = color
-        val oldStyle = style
+        //val oldStyle = style
         color = orderColor
-        style = Paint.Style.FILL
+        //style = Paint.Style.FILL
 
         block()
         // Восстановим старый цвет
         color = oldColor
-        style = oldStyle
+        //style = oldStyle
     }
 }

@@ -1,4 +1,4 @@
-package ru.skillbranch.skillarticles.markdown.spans
+package ru.skillbranch.skillarticles.ui.custom.spans
 
 import android.graphics.Canvas
 import android.graphics.DashPathEffect
@@ -12,8 +12,6 @@ import androidx.annotation.VisibleForTesting
 
 class IconLinkSpan(
     private val linkDrawable: Drawable,
-    @ColorInt
-    private val iconColor: Int,
     @Px
     private val padding: Float,
     @ColorInt
@@ -48,13 +46,12 @@ class IconLinkSpan(
             canvas.drawPath(path, paint)
         }
 
-        paint.forIcon {
-            canvas.save()
-            val trY =  bottom - linkDrawable.bounds.bottom
-            canvas.translate(x, trY.toFloat())
-            linkDrawable.draw(canvas)
-            canvas.restore()
-        }
+        canvas.save()
+        val trY =  bottom - linkDrawable.bounds.bottom
+        canvas.translate(x, trY.toFloat())
+        linkDrawable.draw(canvas)
+        canvas.restore()
+
 
         paint.forText {
             canvas.drawText(text, start, end, textStart, y.toFloat(), paint)
@@ -72,7 +69,6 @@ class IconLinkSpan(
         if (fm != null){
             iconSize = fm.descent - fm.ascent // размер фонта
             linkDrawable.setBounds(0, 0, iconSize, iconSize)
-            linkDrawable.setTint(iconColor)
         }
         textWidth = paint.measureText(text.toString(), start, end)
         return (iconSize + padding + textWidth).toInt()
@@ -102,17 +98,5 @@ class IconLinkSpan(
         color = textColor
         block()
         color = oldColor
-    }
-
-    private inline fun Paint.forIcon(block: () -> Unit) {
-        val oldColor = color
-        val oldStyle = style
-        color = textColor
-        style = Paint.Style.STROKE // просто линия
-
-        block()
-
-        color = oldColor
-        style = oldStyle
     }
 }

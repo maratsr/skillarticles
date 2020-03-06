@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.text.Selection
 import android.text.Spannable
 import android.text.method.LinkMovementMethod
-import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -24,11 +23,11 @@ import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.setMarginOptionally
-import ru.skillbranch.skillarticles.markdown.MarkdownBuilder
+import ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownBuilder
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
-import ru.skillbranch.skillarticles.ui.custom.SearchFocusSpan
-import ru.skillbranch.skillarticles.ui.custom.SearchSpan
+import ru.skillbranch.skillarticles.ui.custom.spans.SearchFocusSpan
+import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
 import ru.skillbranch.skillarticles.ui.delegates.AttrValue
 import ru.skillbranch.skillarticles.ui.delegates.ObserveProp
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
@@ -74,7 +73,10 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         // int, int  - начало и конец вхождения
         searchResult.forEach { (start, end) ->
             content.setSpan(
-                SearchSpan(bgColor, fgColor),
+                SearchSpan(
+                    bgColor,
+                    fgColor
+                ),
                 start,
                 end,
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -103,7 +105,10 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             Selection.setSelection(content, content.getSpanStart(result))
             // И установить выделение при поиске
             content.setSpan(
-                SearchFocusSpan(bgColor, fgColor),
+                SearchFocusSpan(
+                    bgColor,
+                    fgColor
+                ),
                 content.getSpanStart(result),
                 content.getSpanEnd(result),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE

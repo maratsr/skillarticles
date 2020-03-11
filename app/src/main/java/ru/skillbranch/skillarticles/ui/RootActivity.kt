@@ -44,19 +44,8 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
 
     override val layout: Int = R.layout.activity_root
 
-//    override val viewModel: ArticleViewModel by lazy {
-//        val vmFactory = ViewModelFactory("0")
-//        ViewModelProviders.of(this, vmFactory).get(ArticleViewModel::class.java)
-//    }
-
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     override val viewModel: ArticleViewModel by provideViewModel("0")
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    val bgColor by AttrValue(R.attr.colorSecondary) // ранее было  Color.RED
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    val fgColor by AttrValue(R.attr.colorOnSecondary) // = Color.WHITE
 
     override fun setupViews() {
         setupToolbar()
@@ -73,10 +62,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         // int, int  - начало и конец вхождения
         searchResult.forEach { (start, end) ->
             content.setSpan(
-                SearchSpan(
-                    bgColor,
-                    fgColor
-                ),
+                SearchSpan(),
                 start,
                 end,
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -105,10 +91,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             Selection.setSelection(content, content.getSpanStart(result))
             // И установить выделение при поиске
             content.setSpan(
-                SearchFocusSpan(
-                    bgColor,
-                    fgColor
-                ),
+                SearchFocusSpan(),
                 content.getSpanStart(result),
                 content.getSpanEnd(result),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE

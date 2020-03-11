@@ -42,6 +42,11 @@ class HeaderSpan constructor(
         6 to 0.85f
     )
 
+    var topExtraPadding = 0
+    var bottomExtraPadding = 0
+    lateinit var firstLineBounds: kotlin.ranges.IntRange
+    lateinit var lastLineBounds: kotlin.ranges.IntRange
+
     override fun chooseHeight(
         text: CharSequence?,
         start: Int,
@@ -60,13 +65,19 @@ class HeaderSpan constructor(
         if (spanStart == start) {// Это первая строка
             originAscent = fm.ascent
             fm.ascent = (fm.ascent - marginTop).toInt()
+            topExtraPadding = marginTop.toInt()
+            firstLineBounds = start..end.dec()
+
         } else { // не первая линия
             fm.ascent = originAscent // отступ делаем только от первой линии, для остальных восстанавливаем
         }
 
         if (spanEnd == end.dec()) {// Это последняя линия (dec - чтобы не учитывать разделитель
             val originHeight = fm.descent - originAscent
+            val originDescent = fm.descent
             fm.descent = (originHeight * linePadding + marginBottom).toInt()
+            bottomExtraPadding = fm.descent - originDescent
+            lastLineBounds = start..end.dec()
         }
         fm.top = fm.ascent
         fm.bottom = fm.descent

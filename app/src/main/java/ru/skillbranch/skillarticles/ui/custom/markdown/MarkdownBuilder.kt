@@ -11,6 +11,7 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.Element
+import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.data.repositories.MarkdownParser
 import ru.skillbranch.skillarticles.extensions.dpToPx
 //import android.text.style.StrikethroughSpan
@@ -36,13 +37,10 @@ class MarkdownBuilder(context: Context) {
     private val linkIcon = context.getDrawable(R.drawable.ic_link_black_24dp)!!.apply{
         setTint(colorSecondary)
     }
-//
-    fun markdownToSpan(string: String): SpannedString {
-        val markdown = MarkdownParser.parse(string)
+
+    fun markdownToSpan(textContent: MarkdownElement.Text): SpannedString {
         return buildSpannedString {
-            markdown.elements.forEach {
-                buildElement(it, this)
-            }
+            textContent.elements.forEach { buildElement(it, this)}
         }
     }
 
@@ -115,12 +113,7 @@ class MarkdownBuilder(context: Context) {
                         }
                     }
                 }
-                is Element.BlockCode -> {
-                    inSpans(BlockCodeSpan(colorOnSurface, colorSurface, cornerRadius, gap, element.type)) {
-                        append(element.text)
-                    }
-                }
-                //else -> append(element.text)
+                else -> append(element.text)
             }
 
         }

@@ -75,11 +75,13 @@ class MarkdownImageView private constructor(
     }
 
     init {
+
+        //setBackgroundColor(Color.RED)
+
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
         iv_image = ImageView(context).apply {
-
-            scaleType = ImageView.ScaleType.CENTER_CROP
-            setImageResource(R.drawable.ic_launcher_background)
+//            scaleType = ImageView.ScaleType.CENTER_CROP
+//            setImageResource(R.drawable.ic_launcher_background)
             outlineProvider = object: ViewOutlineProvider() { // Используем для обрезки изображения (скругленный прямоугольник)
                 override fun getOutline(view: View, outline: Outline) {
                     outline.setRoundRect(Rect(0, 0, view.measuredWidth, view.measuredHeight), cornerRadius)
@@ -92,8 +94,8 @@ class MarkdownImageView private constructor(
         addView(iv_image) // добавим к группе Image
 
         // Добавим в view group   title, поиск будет работать и по title
-        tv_title = MarkdownTextView(context).apply {
-            setText("title", TextView.BufferType.SPANNABLE)
+        tv_title = MarkdownTextView(context, fontSize*.75f).apply {
+            //setText("title", TextView.BufferType.SPANNABLE)
             setTextColor(colorOnBackground)
             gravity = Gravity.CENTER
             typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
@@ -127,19 +129,19 @@ class MarkdownImageView private constructor(
             }
         }
         addView(tv_alt)
+
         iv_image.setOnClickListener {
             if(tv_alt?.isVisible == true) animateHideAlt()
             else animateShowAlt()
         }
-
     }
 
     // Размеры ViewGroup-ы
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var usedHeight = 0
         val width = View.getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
-        measureChild(iv_image, widthMeasureSpec, heightMeasureSpec)
-        measureChild(tv_title, widthMeasureSpec, heightMeasureSpec)
+//        measureChild(iv_image, widthMeasureSpec, heightMeasureSpec)
+//        measureChild(tv_title, widthMeasureSpec, heightMeasureSpec)
 
         // create measureSpec for children EXACTLY despite default WRAP_CONTENT
         // all children width = parent width (constraint parent width)
@@ -148,9 +150,8 @@ class MarkdownImageView private constructor(
         // Для каждого child-а передаем измеренную ширину (= максимальной ширине родителя=ViewGroup)
         iv_image.measure(ms, heightMeasureSpec)
         tv_title.measure(ms, heightMeasureSpec)
-
         // Измеряем, если есть альтернативный текст
-        if (tv_alt != null) measureChild(tv_alt, widthMeasureSpec, heightMeasureSpec)
+        tv_alt?.measure(widthMeasureSpec, heightMeasureSpec)
 
         usedHeight += iv_image.measuredHeight
         usedHeight += titleTopMargin // Отступ между изображением и титулом

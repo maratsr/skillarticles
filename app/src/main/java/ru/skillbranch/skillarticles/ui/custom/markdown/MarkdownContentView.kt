@@ -99,14 +99,13 @@ class MarkdownContentView @JvmOverloads constructor(
                 }
 
                 is MarkdownElement.Scroll -> {
-                    //TODO("s")
-//                    val sv = MarkdownCodeView(
-//                        context,
-//                        textSize,
-//                        it.blockCode.text
-//                    )
-//
-//                    addView(sv)
+                    val sv = MarkdownCodeView(
+                        context,
+                        textSize,
+                        it.blockCode.text
+                    )
+
+                    addView(sv)
                 }
             }
         }
@@ -159,8 +158,13 @@ class MarkdownContentView @JvmOverloads constructor(
         }
     }
 
-private fun List<Pair<Int,Int>>.groupByBounds(bounds: List<Pair<Int,Int>>): List<List<Pair<Int, Int>>> {
-    return emptyList()
-    // TODO
+    private fun List<Pair<Int,Int>>.groupByBounds(bounds: List<Pair<Int,Int>>): List<List<Pair<Int, Int>>> {
+        return emptyList()
+        // TODO
+    }
+
+    fun setCopyListener(listener: (String) -> Unit) {
+        children.filterIsInstance<MarkdownCodeView>() // Если MarkdownCodeView
+            .forEach { it.copyListener = listener }
     }
 }

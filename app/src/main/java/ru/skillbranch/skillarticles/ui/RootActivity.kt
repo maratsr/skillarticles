@@ -1,5 +1,8 @@
 package ru.skillbranch.skillarticles.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -8,6 +11,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
@@ -16,6 +20,7 @@ import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
+import ru.skillbranch.skillarticles.extensions.hideKeyboard
 import ru.skillbranch.skillarticles.extensions.setMarginOptionally
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.base.Binding
@@ -150,14 +155,14 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         btn_settings.setOnClickListener{viewModel.handleToggleMenu()}
 
         btn_result_up.setOnClickListener {
-            if(search_view.hasFocus()) search_view.clearFocus()
             if(!tv_text_content.hasFocus()) tv_text_content.requestFocus()
+            hideKeyboard(btn_result_up)
             viewModel.handleUpResult()
         }
 
         btn_result_down.setOnClickListener {
-            if(search_view.hasFocus()) search_view.clearFocus()
             if(!tv_text_content.hasFocus()) tv_text_content.requestFocus()
+            hideKeyboard(btn_result_down)
             viewModel.handleDownResult()
         }
 
@@ -180,6 +185,15 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
             it.height= this.dpToIntPx(40)
             it.marginEnd = this.dpToIntPx(16) // Зададим отступ справа
             logo.layoutParams = it
+        }
+    }
+
+    private fun setupCopyListener() {
+        tv_text_content.setCopyListener{copy ->
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("Copied code", copy)
+            clipboard.setPrimaryClip(clip)
+            viewModel.handleCopyCode()
         }
     }
 
@@ -216,7 +230,18 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         }
 
         var isSearch: Boolean by ObserveProp(false) {
-            if (it) showSearchBar() else hideSearchBar()
+            if (it) {
+                showSearchBar()
+                with(toolbar) {
+                    (layoutParams as AppBarLayout.LayoutParams).scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL
+                }
+            }else {
+                hideSearchBar()
+                with(toolbar) {
+                    (layoutParams as AppBarLayout.LayoutParams).scrollFlags =
+                        AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS_COLLAPSED
+                }
+            }
         }
 
         private var searchResults: List<Pair<Int, Int>> by ObserveProp(emptyList())
@@ -224,6 +249,7 @@ class RootActivity : BaseActivity<ArticleViewModel>(), IArticleView {
         private var content: List<MarkdownElement> by ObserveProp(emptyList()) {
             tv_text_content.isLoading = it.isEmpty()
             tv_text_content.setContent(it)
+            if (it.isNotEmpty()) setupCopyListener()
         }
 
         override fun onFinishInflate() {

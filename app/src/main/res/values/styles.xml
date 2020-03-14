@@ -1,5 +1,9 @@
 <resources>
-
+<!--    global colors-->
+    <attr name="darkSurfaceColor" format="color" />
+    <attr name="lightSurfaceColor" format="color" />
+    <attr name="darkOnSurfaceColor" format="color" />
+    <attr name="lightOnSurfaceColor" format="color" />
     <!-- Base application theme.
     ColotOnPrimary используется на поверхностях с backgroud=ColorPrimary
     ColorSecondary - цвет акцента, ColorOnSecondary  - как отображаются на поверхностях с ColorSecondary
@@ -27,6 +31,11 @@
         <item name="colorOnSurface">@color/color_on_surface</item>
 
         <item name="snackbarStyle">@style/CustomSnackbar</item>
+
+        <item name="darkSurfaceColor"  >#272727</item>
+        <item name="lightSurfaceColor"  >#F6F6F6</item>
+        <item name="darkOnSurfaceColor" >#F6F6F6</item>
+        <item name="lightOnSurfaceColor" >#202020</item>
     </style>
 
     <!--    Тема для article, унаследованная от темы материал компонента c переопределением цветов

@@ -21,12 +21,13 @@ import ru.skillbranch.skillarticles.extensions.data.getLineTopWithoutPadding
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.dpToPx
 import ru.skillbranch.skillarticles.ui.custom.spans.HeaderSpan
+import ru.skillbranch.skillarticles.ui.custom.spans.SearchFocusSpan
 import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
 
 // Отрисовка фона под TextView
 class SearchBgHelper(
     context: Context,
-    private val focueListener: (Int) -> Unit // лямбда за фокус
+    private val focueListener: (Int, Int) -> Unit // лямбда за фокус c параметрами top, bottom
 ) {
     private val padding: Int = context.dpToIntPx(4)
     private val radius: Float = context.dpToPx(8) // радиус скругления
@@ -118,6 +119,10 @@ class SearchBgHelper(
             spanStart = text.getSpanStart(it)
             startLine = layout.getLineForOffset(spanStart) // возвращает номер строки
             endLine = layout.getLineForOffset(spanEnd) // номер строки окончания спана
+
+            if (it is SearchFocusSpan) { // Переводим фокус на эту высоту строки
+                focueListener.invoke(layout.getLineTop(startLine), layout.getLineBottom(startLine))
+            }
 
             headerSpans = text.getSpans(spanStart, spanEnd, HeaderSpan::class.java)
             topExtraPadding = 0

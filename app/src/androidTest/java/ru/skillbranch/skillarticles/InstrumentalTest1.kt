@@ -313,96 +313,96 @@ class InstrumentedTest1 {
     }
 
     @Test
-    fun draw_link() {
-        //settings
-        val iconColor: Int = Color.RED
-        val padding: Float = 8f
-        val textColor: Int = Color.BLUE
-
-        //defaults
-        val canvasWidth = 700
-        val defaultColor = Color.GRAY
-        val measureText = 100f
-        val defaultAscent = -30
-        val defaultDescent = 10
-        val cml = 0 //current margin location
-        val ltop = 0 //line top
-        val lbase = 60 //line baseline
-        val lbottom = 80 //line bottom
-
-        //mocks
-        val canvas = mock(Canvas::class.java)
-        `when`(canvas.width).thenReturn(canvasWidth)
-        val paint = mock(Paint::class.java)
-        `when`(paint.color).thenReturn(defaultColor)
-        `when`(
-            paint.measureText(
-                ArgumentMatchers.anyString(),
-                ArgumentMatchers.anyInt(),
-                ArgumentMatchers.anyInt()
-            )
-        ).thenReturn(measureText)
-        val fm = mock(Paint.FontMetricsInt::class.java)
-        fm.ascent = defaultAscent
-        fm.descent = defaultDescent
-
-        //spy - объекты, реальная имплементация класса
-        val linkDrawable: Drawable = spy(VectorDrawable())
-        val path: Path = spy(Path())
-
-        val text = SpannableString("text")
-
-        val span = IconLinkSpan(linkDrawable, iconColor, padding, textColor)
-        text.setSpan(span, 0, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        span.path = path // подставляем spy объект
-
-        //check measure size
-        val size = span.getSize(paint, text, 0, text.length, fm)
-        assertEquals((defaultDescent - defaultAscent + padding + measureText).toInt(), size)
-
-        //check drawable set bounds and set tint
-        verify(linkDrawable).setBounds(0, 0, fm.descent - fm.ascent, fm.descent - fm.ascent)
-        verify(linkDrawable).setTint(iconColor)
-
-        //check draw icon and text
-        span.draw(canvas, text, 0, text.length, cml.toFloat(), ltop, lbase, lbottom, paint)
-
-        val inOrder = inOrder(paint, canvas, path, linkDrawable) // список проверяемых
-
-        //check path effect
-        verify(paint, atLeastOnce()).pathEffect = any() // есть хотя бы один pathEffect
-        verify(paint, atLeastOnce()).strokeWidth = 0f // хотя бы один раз изменил толщину линии до 0 (прерывистая линия)
-        inOrder.verify(paint).color = textColor // была смена цвета
-
-        //check reset path
-        inOrder.verify(path).reset() //check reset before draw
-        verify(path).moveTo(cml + span.iconSize + padding, lbottom.toFloat())
-        verify(path).lineTo(cml + span.iconSize + padding + span.textWidth, lbottom.toFloat())
-
-        //check draw path
-        inOrder.verify(canvas).drawPath(path, paint)
-
-        //check draw icon
-        inOrder.verify(canvas).save() // сохраняет текущую канву
-        inOrder.verify(canvas).translate( // перемещаем
-            cml.toFloat(),
-            (lbottom - linkDrawable.bounds.bottom).toFloat()
-        )
-        inOrder.verify(linkDrawable).draw(canvas) // отрисовываем в нужном положении иконку (draw не учитывает смещения, поэтому сами ранее сдвинули)
-        inOrder.verify(canvas).restore() // Возвращаем на место канву
-
-        //check draw text
-        inOrder.verify(paint).color = textColor // Проверяем цвет отрисовки
-        inOrder.verify(canvas).drawText(
-            text,
-            0,
-            text.length,
-            cml + span.iconSize + padding,
-            lbase.toFloat(),
-            paint
-        )
-        inOrder.verify(paint).color = defaultColor // и после отрисовки цвет восстановлен
-    }
+//    fun draw_link() {
+//        //settings
+//        val iconColor: Int = Color.RED
+//        val padding: Float = 8f
+//        val textColor: Int = Color.BLUE
+//
+//        //defaults
+//        val canvasWidth = 700
+//        val defaultColor = Color.GRAY
+//        val measureText = 100f
+//        val defaultAscent = -30
+//        val defaultDescent = 10
+//        val cml = 0 //current margin location
+//        val ltop = 0 //line top
+//        val lbase = 60 //line baseline
+//        val lbottom = 80 //line bottom
+//
+//        //mocks
+//        val canvas = mock(Canvas::class.java)
+//        `when`(canvas.width).thenReturn(canvasWidth)
+//        val paint = mock(Paint::class.java)
+//        `when`(paint.color).thenReturn(defaultColor)
+//        `when`(
+//            paint.measureText(
+//                ArgumentMatchers.anyString(),
+//                ArgumentMatchers.anyInt(),
+//                ArgumentMatchers.anyInt()
+//            )
+//        ).thenReturn(measureText)
+//        val fm = mock(Paint.FontMetricsInt::class.java)
+//        fm.ascent = defaultAscent
+//        fm.descent = defaultDescent
+//
+//        //spy - объекты, реальная имплементация класса
+//        val linkDrawable: Drawable = spy(VectorDrawable())
+//        val path: Path = spy(Path())
+//
+//        val text = SpannableString("text")
+//
+//        val span = IconLinkSpan(linkDrawable, iconColor, padding, textColor)
+//        text.setSpan(span, 0, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+//        span.path = path // подставляем spy объект
+//
+//        //check measure size
+//        val size = span.getSize(paint, text, 0, text.length, fm)
+//        assertEquals((defaultDescent - defaultAscent + padding + measureText).toInt(), size)
+//
+//        //check drawable set bounds and set tint
+//        verify(linkDrawable).setBounds(0, 0, fm.descent - fm.ascent, fm.descent - fm.ascent)
+//        verify(linkDrawable).setTint(iconColor)
+//
+//        //check draw icon and text
+//        span.draw(canvas, text, 0, text.length, cml.toFloat(), ltop, lbase, lbottom, paint)
+//
+//        val inOrder = inOrder(paint, canvas, path, linkDrawable) // список проверяемых
+//
+//        //check path effect
+//        verify(paint, atLeastOnce()).pathEffect = any() // есть хотя бы один pathEffect
+//        verify(paint, atLeastOnce()).strokeWidth = 0f // хотя бы один раз изменил толщину линии до 0 (прерывистая линия)
+//        inOrder.verify(paint).color = textColor // была смена цвета
+//
+//        //check reset path
+//        inOrder.verify(path).reset() //check reset before draw
+//        verify(path).moveTo(cml + span.iconSize + padding, lbottom.toFloat())
+//        verify(path).lineTo(cml + span.iconSize + padding + span.textWidth, lbottom.toFloat())
+//
+//        //check draw path
+//        inOrder.verify(canvas).drawPath(path, paint)
+//
+//        //check draw icon
+//        inOrder.verify(canvas).save() // сохраняет текущую канву
+//        inOrder.verify(canvas).translate( // перемещаем
+//            cml.toFloat(),
+//            (lbottom - linkDrawable.bounds.bottom).toFloat()
+//        )
+//        inOrder.verify(linkDrawable).draw(canvas) // отрисовываем в нужном положении иконку (draw не учитывает смещения, поэтому сами ранее сдвинули)
+//        inOrder.verify(canvas).restore() // Возвращаем на место канву
+//
+//        //check draw text
+//        inOrder.verify(paint).color = textColor // Проверяем цвет отрисовки
+//        inOrder.verify(canvas).drawText(
+//            text,
+//            0,
+//            text.length,
+//            cml + span.iconSize + padding,
+//            lbase.toFloat(),
+//            paint
+//        )
+//        inOrder.verify(paint).color = defaultColor // и после отрисовки цвет восстановлен
+//    }
 
 
 }

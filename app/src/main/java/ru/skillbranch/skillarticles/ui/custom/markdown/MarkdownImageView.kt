@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
+import androidx.annotation.VisibleForTesting
 import androidx.core.animation.doOnEnd
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.isVisible
@@ -48,9 +49,12 @@ class MarkdownImageView private constructor(
     private lateinit var imageUrl: String
     private lateinit var imageTitle: CharSequence
 
-    private val iv_image: ImageView
-    private val tv_title: MarkdownTextView
-    private var tv_alt: TextView? = null
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val iv_image: ImageView
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    val tv_title: MarkdownTextView
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    var tv_alt: TextView? = null
 
     @Px
     private val titleTopMargin: Int = context.dpToIntPx(8) //8dp
@@ -137,7 +141,8 @@ class MarkdownImageView private constructor(
     }
 
     // Размеры ViewGroup-ы
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var usedHeight = 0
         val width = View.getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
 //        measureChild(iv_image, widthMeasureSpec, heightMeasureSpec)
@@ -162,7 +167,8 @@ class MarkdownImageView private constructor(
     }
 
     // Компоновка составных дочерних View в группе
-    override fun onLayout(changed: Boolean, left: Int, t: Int, r: Int, b: Int) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public override fun onLayout(changed: Boolean, left: Int, t: Int, r: Int, b: Int) {
         var usedHeight = 0
         val bodyWidth = r - left - paddingLeft - paddingRight
         val left = paddingLeft
@@ -178,7 +184,8 @@ class MarkdownImageView private constructor(
             left, iv_image.measuredHeight - (tv_alt?.measuredHeight ?: 0), right, iv_image.measuredHeight)
     }
 
-    override fun dispatchDraw(canvas: Canvas) { // отрисуем divider-ы
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public override fun dispatchDraw(canvas: Canvas) { // отрисуем divider-ы
         super.dispatchDraw(canvas)
         canvas.drawLine(0f, linePositionY, titlePadding.toFloat(), linePositionY, linePaint)
         canvas.drawLine(canvas.width - titlePadding.toFloat(), linePositionY, canvas.width.toFloat(), linePositionY, linePaint)

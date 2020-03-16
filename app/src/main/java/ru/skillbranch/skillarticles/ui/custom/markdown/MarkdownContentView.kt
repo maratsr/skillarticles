@@ -4,9 +4,11 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.VisibleForTesting
 import androidx.core.view.children
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
+import ru.skillbranch.skillarticles.extensions.groupByBounds
 import ru.skillbranch.skillarticles.extensions.setPaddingOptionally
 import kotlin.properties.Delegates
 
@@ -50,7 +52,7 @@ class MarkdownContentView @JvmOverloads constructor(
     // Компоновка ViewGroup-ы
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         var usedHeight = paddingTop
-        val bodyWidth = right - left - paddingLeft- paddingRight
+        val bodyWidth = right - left - paddingLeft - paddingRight
         val left = paddingLeft
         val right = paddingLeft + bodyWidth
 
@@ -156,11 +158,6 @@ class MarkdownContentView @JvmOverloads constructor(
             view as IMarkdownView
             view.clearSearchResult()
         }
-    }
-
-    private fun List<Pair<Int,Int>>.groupByBounds(bounds: List<Pair<Int,Int>>): List<List<Pair<Int, Int>>> {
-        return emptyList()
-        // TODO
     }
 
     fun setCopyListener(listener: (String) -> Unit) {

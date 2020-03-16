@@ -27,8 +27,12 @@ import ru.skillbranch.skillarticles.ui.custom.spans.SearchSpan
 // Отрисовка фона под TextView
 class SearchBgHelper(
     context: Context,
-    private val focueListener: (Int, Int) -> Unit // лямбда за фокус c параметрами top, bottom
+    private val focusListener: ((Int, Int) -> Unit)? = null, // лямбда за фокус c параметрами top, bottom
+    mockDrawable: Drawable? = null //for mock drawable - костыль тестирования =(
 ) {
+
+    constructor(context: Context, focusListener: ((Int, Int) -> Unit)) : this(context, focusListener, null)
+
     private val padding: Int = context.dpToIntPx(4)
     private val radius: Float = context.dpToPx(8) // радиус скругления
     private val borderWidth: Int = context.dpToIntPx(1) // толщина границы
@@ -41,7 +45,7 @@ class SearchBgHelper(
     // drawable для выделения в середине текста (все углы скруглены)
     // some text DRAWABLE continue sometext
     val drawable: Drawable by lazy {
-        GradientDrawable(). apply {
+        mockDrawable ?: GradientDrawable(). apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = FloatArray(8).apply {fill(radius,0, size) }
             color = ColorStateList.valueOf(alphaColor) // полупрозрачность
@@ -56,7 +60,7 @@ class SearchBgHelper(
 
     // скругления только на левой стороне прямоугольника выделения
     val drawableLeft: Drawable by lazy {
-        GradientDrawable(). apply {
+        mockDrawable ?: GradientDrawable(). apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = floatArrayOf( radius, radius, // top left radius in px
                 0f, 0f,                                 // top right radius in px
@@ -70,7 +74,7 @@ class SearchBgHelper(
 
     // без скруглений прямоугольника выделения
     val drawableMiddle: Drawable by lazy {
-        GradientDrawable(). apply {
+        mockDrawable ?: GradientDrawable(). apply {
             shape = GradientDrawable.RECTANGLE
             color = ColorStateList.valueOf(alphaColor) // полупрозрачность
             setStroke(borderWidth, secondaryColor) // ширина обводки и цвет
@@ -79,7 +83,7 @@ class SearchBgHelper(
 
     // скругления только на правой стороне прямоугольника выделения
     val drawableRight: Drawable by lazy {
-        GradientDrawable(). apply {
+        mockDrawable ?: GradientDrawable(). apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = floatArrayOf( 0f, 0f, // top left radius in px
                 radius, radius,                 // top right radius in px
@@ -94,12 +98,8 @@ class SearchBgHelper(
     private lateinit var spans: Array<out SearchSpan>
     private lateinit var headerSpans: Array<out HeaderSpan>
     private lateinit var render: SearchBgRender
-    private val singleLineRender: SearchBgRender by lazy {
-        SingleLineRender(padding, drawable)
-    }
-    private val multiLineRender: SearchBgRender by lazy {
-        MultiLineRender(padding, drawableLeft, drawableMiddle, drawableRight)
-    }
+    private val singleLineRender: SearchBgRender =  SingleLineRender(padding, drawable)  // by lazy {SingleLineRender(padding, drawable)}
+    private val multiLineRender: SearchBgRender = MultiLineRender(padding, drawableLeft, drawableMiddle, drawableRight) //by lazy { MultiLineRender(padding, drawableLeft, drawableMiddle, drawableRight)}
 
     private var spanEnd = 0
     private var spanStart = 0
@@ -121,7 +121,7 @@ class SearchBgHelper(
             endLine = layout.getLineForOffset(spanEnd) // номер строки окончания спана
 
             if (it is SearchFocusSpan) { // Переводим фокус на эту высоту строки
-                focueListener.invoke(layout.getLineTop(startLine), layout.getLineBottom(startLine))
+                focusListener?.invoke(layout.getLineTop(startLine), layout.getLineBottom(startLine))
             }
 
             headerSpans = text.getSpans(spanStart, spanEnd, HeaderSpan::class.java)

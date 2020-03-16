@@ -16,7 +16,13 @@ import ru.skillbranch.skillarticles.extensions.dpToIntPx
 
 @SuppressLint("ViewConstructor")
 class MarkdownTextView constructor(
-    context: Context, fontSize: Float): TextView(context, null, 0), IMarkdownView {
+      context: Context,
+      fontSize: Float,
+      mockHelper: SearchBgHelper? = null // for mock
+): TextView(context, null, 0), IMarkdownView {
+
+    constructor(context: Context, fontSize: Float) : this(context, fontSize, null)
+
     override var fontSize: Float = fontSize
         set(value) {
             textSize = value
@@ -29,14 +35,18 @@ class MarkdownTextView constructor(
     private val color = context.attrValue(R.attr.colorOnBackground)
     private val focusRect = Rect()
 
-    private val searchBgHelper = SearchBgHelper(context) {top, bottom ->
+    private var searchBgHelper = SearchBgHelper(context) {top, bottom ->
         focusRect.set(0, top - context.dpToIntPx(56), width, bottom + context.dpToIntPx(56))
         //show rect with animation on view
         requestRectangleOnScreen(focusRect, false)
     }
 
     init{
-
+        searchBgHelper = mockHelper ?: SearchBgHelper(context) {top, bottom ->
+            focusRect.set(0, top - context.dpToIntPx(56), width, bottom + context.dpToIntPx(56))
+            //show rect with animation on view
+            requestRectangleOnScreen(focusRect, false)
+        }
         //setBackgroundColor(Color.GREEN)
         setTextColor(color)
         textSize = fontSize

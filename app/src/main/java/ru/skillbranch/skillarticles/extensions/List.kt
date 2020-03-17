@@ -1,7 +1,6 @@
 package ru.skillbranch.skillarticles.extensions
 
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.*
 
 fun List<Pair<Int,Int>>.groupByBounds(bounds: List<Pair<Int,Int>>): List<List<Pair<Int, Int>>> {
     val result  = mutableListOf<List<Pair<Int,Int>>>()

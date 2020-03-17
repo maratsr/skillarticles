@@ -191,7 +191,7 @@ class MarkdownImageView private constructor(
         canvas.drawLine(canvas.width - titlePadding.toFloat(), linePositionY, canvas.width.toFloat(), linePositionY, linePaint)
     }
 
-    private fun animateShowAlt() {
+    fun animateShowAlt() {
         tv_alt?.isVisible = true
         val endRadius = hypot(tv_alt?.width?.toFloat() ?: 0f, tv_alt?.height?.toFloat() ?: 0f)
         val va = ViewAnimationUtils.createCircularReveal(

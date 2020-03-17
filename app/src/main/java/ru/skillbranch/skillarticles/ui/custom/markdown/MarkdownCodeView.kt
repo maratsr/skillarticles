@@ -192,4 +192,15 @@ class MarkdownCodeView private constructor(
         (background as GradientDrawable).color = ColorStateList.valueOf(bgColor)
         tv_codeView.setTextColor(textColor)
     }
+
+    fun setMode(dark: Boolean) {
+        isDark = dark
+        isManual = true
+        applyColors()
+    }
+
+    fun getMode(): Boolean {
+        return isDark
+    }
+
 }

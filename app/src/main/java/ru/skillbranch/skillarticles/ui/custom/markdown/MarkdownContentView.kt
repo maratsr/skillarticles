@@ -1,11 +1,14 @@
 package ru.skillbranch.skillarticles.ui.custom.markdown
 
 import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.SparseArray
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.annotation.VisibleForTesting
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.groupByBounds
@@ -163,5 +166,55 @@ class MarkdownContentView @JvmOverloads constructor(
     fun setCopyListener(listener: (String) -> Unit) {
         children.filterIsInstance<MarkdownCodeView>() // Если MarkdownCodeView
             .forEach { it.copyListener = listener }
+    }
+
+
+    public override fun onSaveInstanceState(): Parcelable? {
+        val savedState = SavedState(super.onSaveInstanceState())
+        savedState.viewModeFlags = SparseArray()
+        children.forEach {view ->
+            when(view) {
+                is MarkdownCodeView -> savedState.viewModeFlags?.put(indexOfChild(view), view.getMode())
+                is MarkdownImageView -> savedState.viewModeFlags?.put(indexOfChild(view), view.tv_alt?.isVisible ?: false)
+            }
+        }
+        return savedState
+    }
+
+    public override fun onRestoreInstanceState(state: Parcelable) {
+        if (state is SavedState) {
+            super.onRestoreInstanceState(state.superState)
+            children.forEach {view ->
+                when(view) {
+                    is MarkdownCodeView -> view.setMode(state.viewModeFlags!!.get(indexOfChild(view)))
+                    is MarkdownImageView -> view.tv_alt?.isVisible = state.viewModeFlags!!.get(indexOfChild(view))
+                }
+            }
+        } else super.onRestoreInstanceState(state)
+    }
+
+    //Утащил идеи с https://medium.com/@kirillsuslov/how-to-save-android-view-state-in-kotlin-9dbe96074d49
+    // https://medium.com/@mattcarroll/android-how-to-save-state-in-a-custom-view-30e5792c584b
+    internal class SavedState : BaseSavedState {
+        var viewModeFlags : SparseArray<Boolean>? = null
+
+        constructor(source: Parcel) : super(source) {
+            viewModeFlags = source.readSparseArray(javaClass.classLoader)
+        }
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        override fun writeToParcel(out: Parcel, flags: Int) {
+            super.writeToParcel(out, flags)
+            out.writeSparseArray(viewModeFlags)
+        }
+
+        companion object {
+            @JvmField
+            val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState> {
+                override fun createFromParcel(source: Parcel): SavedState = SavedState(source)
+                override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+            }
+        }
     }
 }

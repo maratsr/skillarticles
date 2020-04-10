@@ -3,6 +3,8 @@ package ru.skillbranch.skillarticles.ui.custom.markdown
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.Spannable
 import android.view.*
 import android.widget.ImageView
@@ -78,6 +80,9 @@ class MarkdownImageView private constructor(
         strokeWidth = 0f
     }
 
+    private var isOpen = false
+    private var aspectRatio = 0f
+
     init {
 
         //setBackgroundColor(Color.RED)
@@ -140,8 +145,17 @@ class MarkdownImageView private constructor(
         }
     }
 
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        Glide
+            .with(context)
+            .load(imageUrl)
+            .transform(AspectRatioResizeTransform())
+            .into(iv_image)
+    }
+
     // Размеры ViewGroup-ы
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var usedHeight = 0
         val width = View.getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
@@ -153,7 +167,12 @@ class MarkdownImageView private constructor(
         val ms = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
 
         // Для каждого child-а передаем измеренную ширину (= максимальной ширине родителя=ViewGroup)
-        iv_image.measure(ms, heightMeasureSpec)
+        if (aspectRatio != 0f) { //restore width/height by aspectRatio
+            val hms =
+                MeasureSpec.makeMeasureSpec((width / aspectRatio).toInt(), MeasureSpec.EXACTLY)
+            iv_image.measure(ms, hms)
+        } else iv_image.measure(ms, heightMeasureSpec)
+
         tv_title.measure(ms, heightMeasureSpec)
         // Измеряем, если есть альтернативный текст
         tv_alt?.measure(widthMeasureSpec, heightMeasureSpec)
@@ -167,7 +186,7 @@ class MarkdownImageView private constructor(
     }
 
     // Компоновка составных дочерних View в группе
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public override fun onLayout(changed: Boolean, left: Int, t: Int, r: Int, b: Int) {
         var usedHeight = 0
         val bodyWidth = r - left - paddingLeft - paddingRight
@@ -184,14 +203,15 @@ class MarkdownImageView private constructor(
             left, iv_image.measuredHeight - (tv_alt?.measuredHeight ?: 0), right, iv_image.measuredHeight)
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public override fun dispatchDraw(canvas: Canvas) { // отрисуем divider-ы
         super.dispatchDraw(canvas)
         canvas.drawLine(0f, linePositionY, titlePadding.toFloat(), linePositionY, linePaint)
         canvas.drawLine(canvas.width - titlePadding.toFloat(), linePositionY, canvas.width.toFloat(), linePositionY, linePaint)
     }
 
-    fun animateShowAlt() {
+    private fun animateShowAlt() {
+        isOpen = true
         tv_alt?.isVisible = true
         val endRadius = hypot(tv_alt?.width?.toFloat() ?: 0f, tv_alt?.height?.toFloat() ?: 0f)
         val va = ViewAnimationUtils.createCircularReveal(
@@ -205,6 +225,7 @@ class MarkdownImageView private constructor(
     }
 
     private fun animateHideAlt() {
+        isOpen = false
         val endRadius = hypot(tv_alt?.width?.toFloat() ?: 0f, tv_alt?.height?.toFloat() ?: 0f)
         val va = ViewAnimationUtils.createCircularReveal(
             tv_alt,
@@ -215,6 +236,50 @@ class MarkdownImageView private constructor(
         )
         va.doOnEnd { tv_alt?.isVisible = false }
         va.start()
+    }
+
+    // Для сохранения-восстановления необходимо сохранять aspectRation и статус открыт-закрыт
+    override fun onSaveInstanceState(): Parcelable? {
+        val savedState = SavedState(super.onSaveInstanceState())
+        savedState.ssIsOpen = isOpen
+        savedState.ssAspectRatio  = (iv_image.width.toFloat())/(iv_image.height.toFloat())
+        return savedState
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+        if(state is SavedState) {
+            isOpen = state.ssIsOpen
+            tv_alt?.isVisible = isOpen
+            aspectRatio = state.ssAspectRatio
+        }
+    }
+
+    private class SavedState: BaseSavedState, Parcelable {
+        var ssIsOpen: Boolean = false
+        var ssAspectRatio: Float = 0f
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        constructor(src: Parcel) : super(src) {
+            //restore state from parcel
+            ssIsOpen = src.readInt() == 1
+            ssAspectRatio = src.readFloat()
+        }
+
+        override fun writeToParcel(dst: Parcel, flags: Int) {
+            //write state to parcel
+            super.writeToParcel(dst, flags)
+            dst.writeInt(if (ssIsOpen) 1 else 0)
+            dst.writeFloat(ssAspectRatio)
+        }
+
+        override fun describeContents() = 0
+
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(parcel: Parcel) =  SavedState(parcel)
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+        }
     }
 }
 

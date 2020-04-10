@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.Selection
 import android.text.Spannable
 import android.view.View
@@ -136,9 +138,7 @@ class MarkdownCodeView private constructor(
         setPadding(padding)
         background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadii = FloatArray(8). apply {
-                fill(radius.toFloat(), 0, size)
-            }
+            cornerRadii = FloatArray(8). apply { fill(radius.toFloat(), 0, size)}
             color = ColorStateList.valueOf(bgColor)
         }
     }
@@ -148,6 +148,7 @@ class MarkdownCodeView private constructor(
         var usedHeight = 0
         val width : Int = View.getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
         measureChild(sv_scroll, widthMeasureSpec, heightMeasureSpec)
+        measureChild(iv_copy, widthMeasureSpec, heightMeasureSpec)
         usedHeight += sv_scroll.measuredHeight + paddingTop + paddingBottom
         // размеры кнопок копирования и смены темы известны заранее - потому не измеряем
         setMeasuredDimension(width, usedHeight)
@@ -193,14 +194,48 @@ class MarkdownCodeView private constructor(
         tv_codeView.setTextColor(textColor)
     }
 
-    fun setMode(dark: Boolean) {
-        isDark = dark
-        isManual = true
-        applyColors()
+    // Сохраняем состояние (важно инфу о isManual isDark)
+    override fun onSaveInstanceState(): Parcelable? {
+        val savedState = SavedState(super.onSaveInstanceState())
+        savedState.ssIsManual = isManual
+        savedState.ssIsDark = isDark
+        return savedState
     }
 
-    fun getMode(): Boolean {
-        return isDark
+    // Восстанавливаем состояние
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        super.onRestoreInstanceState(state)
+        if (state is SavedState) {
+            isManual = state.ssIsManual
+            isDark = state.ssIsDark
+            applyColors()
+        }
     }
 
+    private class SavedState : BaseSavedState, Parcelable {
+        var ssIsManual: Boolean = false
+        var ssIsDark: Boolean = false
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        constructor(src: Parcel) : super(src) {
+            //restore state from parcel
+            ssIsManual = src.readInt() == 1
+            ssIsDark = src.readInt() == 1
+        }
+
+        override fun writeToParcel(dst: Parcel, flags: Int) {
+            //write state to parcel
+            super.writeToParcel(dst, flags)
+            dst.writeInt(if (ssIsManual) 1 else 0)
+            dst.writeInt(if (ssIsDark) 1 else 0)
+        }
+
+        override fun describeContents() = 0
+
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(parcel: Parcel) = SavedState(parcel)
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+        }
+    }
 }

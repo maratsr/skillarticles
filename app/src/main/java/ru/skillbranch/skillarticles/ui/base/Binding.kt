@@ -8,11 +8,23 @@ import kotlin.reflect.KProperty
 // Связывание данных и view
 abstract class Binding {
     val delegates = mutableMapOf<String, RenderProp<out Any>>() // название свойств и сам делегат
+    var isInflated = false // binding был создан
 
-    abstract fun onFinishInflate()
+    open val afterInflated: (()-> Unit)? = null
+    fun onFinishInflate(){
+        if (!isInflated) {
+            afterInflated?.invoke()
+            isInflated = true
+        }
+
+    }
     abstract fun bind(data: IViewModelState)
-    abstract fun saveUi(outState: Bundle)
-    abstract fun restoreUi(savedState: Bundle)
+    open fun saveUi(outState: Bundle) {
+
+    }
+    open fun restoreUi(savedState: Bundle?) {
+
+    }
 
     // Наблюдаем за 4мя полями
     @Suppress("UNCHECKED_CAST")
@@ -33,6 +45,10 @@ abstract class Binding {
                 )
             }
         }
+    }
+
+    fun rebind() {
+        delegates.forEach{it.value.bind()}
     }
 
 }

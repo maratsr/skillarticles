@@ -7,31 +7,82 @@ import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.navArgs
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import kotlinx.android.synthetic.main.fragment_article.*
 import kotlinx.android.synthetic.main.search_view_layout.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-import ru.skillbranch.skillarticles.ui.base.BaseFragment
-import ru.skillbranch.skillarticles.ui.base.Binding
+import ru.skillbranch.skillarticles.extensions.dpToIntPx
+import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleState
 import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
+import ru.skillbranch.skillarticles.ui.base.*
 
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
+    private val args: ArticleFragmentArgs by navArgs() // передаваемые между фрагментами данные
     override val viewModel: ArticleViewModel by viewModels {
-        ViewModelFactory(owner = this, params = "0")
+        ViewModelFactory(owner = this, params = args.articleId)
     }
 
-    public override val binding: ArticleBinding by lazy { ArticleBinding() }
+    override val binding: ArticleBinding by lazy { ArticleBinding() }
+
+    // Переопределенный toolBar
+    override val prepareToolbar: (ToolbarBuilder.()-> Unit)? ={
+        this.setTitle(args.title)
+            .setSubtitle(args.category)
+            .setLogo(args.categoryIcon)
+            .addMenuItem(
+                MenuItemHolder(
+                    "search",
+                    R.id.action_search,
+                    R.drawable.ic_search_black_24dp,
+                    R.layout.search_view_layout
+                )
+            )
+    }
+
+     //Переопределенный bottomBar
+    override val prepareBottombar: (BottombarBuilder.()-> Unit)? ={
+        this.addView(R.layout.layout_submenu)
+            .addView(R.layout.layout_bottombar)
+            .setVisibility(false)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override val layout: Int = R.layout.fragment_article
 
     override fun setupViews() {
-//        setupToolbar()
         setupBottombar()
         setupSubmenu()
+
+        // Загрузим картинку на основе данных переданных между фрагментами
+        val avatarSize = root.dpToIntPx(40)
+        val cornerRadius = root.dpToIntPx(8)
+        Glide.with(root)
+            .load(args.authorAvatar)
+            .apply(circleCropTransform())
+            .override(avatarSize)
+            .into(iv_author_avatar)
+
+        Glide.with(root)
+            .load(args.poster)
+            .transform(CenterCrop(), RoundedCorners(cornerRadius))
+            .into(iv_poster)
+
+        tv_title.text = args.title
+        tv_author.text = args.author
+        tv_date.text = args.date.format()
     }
 
     override fun showSearchBar() {

@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinator_container"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.RootActivity">
@@ -29,55 +29,22 @@
             android:elevation="4dp"/>
 
     </com.google.android.material.appbar.AppBarLayout>
-<!--        layout_behavior - при скроллинге будет сворачивать appbar-->
-
-
-<!--    У которых выставлен insetEdget='bottom' - не могут замещаться dodgeInsetEdges="bottom"
-https://stackoverflow.com/questions/55234488/bottomnavigationview-hidden-by-default-after-adding-scroll-behaviour
-добавляем app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
-для прокрутки со скроллом
--->
-<!--    <ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu-->
-<!--        android:id="@+id/submenu"-->
-<!--        android:theme="@style/ArticleBarsTheme"-->
-<!--        android:layout_width="200dp"-->
-<!--        android:layout_height="96dp"-->
-<!--        android:layout_gravity="bottom|right"-->
-<!--        android:elevation="8dp"-->
-<!--        android:layout_marginRight="8dp"-->
-<!--        android:layout_marginBottom="8dp"-->
-<!--        app:layout_dodgeInsetEdges="bottom"-->
-<!--        android:visibility="gone"-->
-<!--        tools:visibility="visible"        />-->
-<!--        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"-->
-
-<!--    <ru.skillbranch.skillarticles.ui.custom.Bottombar-->
-<!--        android:id="@+id/bottombar"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="?attr/actionBarSize"-->
-<!--        android:layout_gravity="bottom"-->
-<!--        android:theme="@style/ArticleBarsTheme"-->
-<!--        android:elevation="4dp"-->
-<!--        app:layout_insetEdge="bottom"/>-->
-<!--        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"-->
 <!--    навигационный граф допом указываем-->
-<fragment
-    android:id="@+id/nav_host_fragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:name="androidx.navigation.fragment.NavHostFragment"
-    app:defaultNavHost="true"
-
-    app:navGraph="@navigation/mobile_navigation"
-    app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-/>
+    <fragment
+        android:id="@+id/nav_host_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/mobile_navigation"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"/>
     
     <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/nav_view"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:layout_gravity="bottom"
         app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-        app:menu=""
-        />
+        app:menu="@menu/bottom_nav_menu"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

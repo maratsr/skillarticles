@@ -17,7 +17,7 @@ class RenderProp<T: Any>(
     }
 
     operator fun provideDelegate(thisRef: Binding, prop: KProperty<*>): ReadWriteProperty<Binding, T> {
-        val delegate = RenderProp(value, true, onChange)
+        val delegate = RenderProp(value, needInit, onChange)
         registerDelegate(thisRef, prop.name, delegate)
         return delegate
     }
@@ -32,9 +32,7 @@ class RenderProp<T: Any>(
     }
 
     // РЕгистрация доп listener-а
-    fun addListener(listener:()->Unit) {
-        listeners.add(listener)
-    }
+    fun addListener(listener:()->Unit) = listeners.add(listener)
 
     // name - название свойства, delegate - привязанный к нему делегат
     private fun registerDelegate(thisRef: Binding, name: String, delegate: RenderProp<T>) {

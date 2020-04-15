@@ -7,6 +7,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
+import kotlinx.android.synthetic.main.layout_bottombar.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.viewmodels.RootViewModel
@@ -97,7 +98,8 @@ class RootActivity : BaseActivity<RootViewModel>() {
     override fun renderNotification(notify: Notify) {
         val snackbar = Snackbar
             .make(container, notify.message, Snackbar.LENGTH_LONG)
-//            .setAnchorView(bottombar)
+        if (bottombar != null) snackbar.anchorView = bottombar
+        else snackbar.anchorView = nav_view
 
 
         when (notify) { // переберем варианты представителей sealed class-а
@@ -106,11 +108,10 @@ class RootActivity : BaseActivity<RootViewModel>() {
             }
 
             is Notify.ActionMessage -> { // пример: при like статьи переспросить в snackbar-е с хендлом смены состояния на лайк
+                val (_, label, handler) = notify
                 with(snackbar) {
                     setActionTextColor(getColor(R.color.color_accent_dark))
-                    setAction(notify.actionLabel) {
-                        notify.actionHandler.invoke()
-                    }
+                    setAction(label) {handler.invoke()}
                 }
             }
 

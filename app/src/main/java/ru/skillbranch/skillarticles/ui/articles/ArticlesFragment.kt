@@ -15,6 +15,7 @@ import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesState
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 
 class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     override val viewModel: ArticlesViewModel by viewModels()
@@ -26,7 +27,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         // данные для перемещения на фрагмент
         val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(item.id, item.author,
             item.authorAvatar, item.category, item.categoryIcon, item.date, item.poster, item.title)
-        findNavController().navigate(action)
+        viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
 
     }
 

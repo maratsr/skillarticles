@@ -6,6 +6,7 @@ import androidx.core.view.marginBottom
 import androidx.core.view.marginLeft
 import androidx.core.view.marginRight
 import androidx.core.view.marginTop
+import androidx.navigation.NavDestination
 
 //Реализуй функцию расширения View.setMarginOptionally(left:Int = marginLeft, top : Int = marginTop,
 // right : Int = marginRight, bottom : Int = marginBottom), в качестве аргумента принимает значения
@@ -21,4 +22,8 @@ fun View.setMarginOptionally(left:Int = marginLeft, top : Int = marginTop, right
 
 fun View.setPaddingOptionally(left:Int = paddingLeft, top : Int = paddingTop, right : Int = paddingRight, bottom : Int = paddingBottom) {
     setPadding(left, top, right, bottom)
+}
+
+fun View.selectDestination(dest: NavDestination?) {
+
 }

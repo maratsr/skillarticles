@@ -9,9 +9,11 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
 import kotlinx.android.synthetic.main.layout_bottombar.*
 import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.extensions.selectDestination
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.viewmodels.RootViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 
@@ -21,7 +23,7 @@ class RootActivity : BaseActivity<RootViewModel>() {
 //    public override val binding: ArticleBinding by lazy { ArticleBinding() }
 
     override val layout: Int = R.layout.activity_root
-    override val viewModel: RootViewModel by viewModels ()
+    public override val viewModel: RootViewModel by viewModels ()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +31,18 @@ class RootActivity : BaseActivity<RootViewModel>() {
         val appbarConfiguration = AppBarConfiguration(
             setOf(R.id.nav_articles, R.id.nav_bookmarks, R.id.nav_profile, R.id.nav_transcriptions))
         setupActionBarWithNavController(navController, appbarConfiguration)
-        nav_view.setupWithNavController(navController)
+
+//        nav_view.setupWithNavController(navController)
+        nav_view.setOnNavigationItemSelectedListener {
+            // if click on bottom navigation item -> navigate to destination by item.id
+            viewModel.navigate(NavigationCommand.To(it.itemId))
+            true
+        }
+
+        navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            // if destination change set select bottom navigation item
+            nav_view.selectDestination(destination)
+        }
     }
 
     //

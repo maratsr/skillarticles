@@ -12,11 +12,10 @@
         <argument
             android:name="article_id"
             app:argType="string"
-            android:defaultValue="boo" />
+            android:defaultValue="-1" />
         <argument
             android:name="author"
-            app:argType="string"
-            />
+            app:argType="string" />
         <argument
             android:name="author_avatar"
             app:argType="string" />
@@ -71,7 +70,6 @@
             android:name="ru.skillbranch.skillarticles.ui.auth.AuthFragment"
             android:label="@string/title_authorization"
             tools:layout="@layout/fragment_auth" >
-
             <argument
                 android:name="private_destination"
                 app:argType="integer"
@@ -82,9 +80,7 @@
             android:name="ru.skillbranch.skillarticles.ui.auth.PrivacyPolicyFragment"
             android:label="@string/title_privacy_policy"
             tools:layout="@layout/fragment_privacy_policy" />
-
     </navigation>
-
 
     <!--    global actions popUpToInclusive - чтобы сразу по бекстеку шагнуть до входу в граф @id/nav_auth-->
     <action
@@ -94,5 +90,4 @@
         android:id="@+id/finish_login"
         app:popUpTo="@id/auth"
         app:popUpToInclusive="true"/>
-
 </navigation>

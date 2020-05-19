@@ -23,14 +23,12 @@ class AuthFragment : BaseFragment<AuthViewModel>() {
 
     override fun setupViews() {
         tv_privacy.setOnClickListener {
-            viewModel.navigate(NavigationCommand.To(R.id.page_privacy_policy))
+            viewModel.navigate(NavigationCommand.To(R.id.page_privacy_policy)) //findNavController().navigate
         }
 
         btn_login.setOnClickListener {
             viewModel.handleLogin(et_login.text.toString(), et_password.text.toString(),
                 if(args.privateDestination == -1) null else args.privateDestination)
-//            val action = AuthFragmentDirections.finishLogin()
-//            findNavController().navigate(action)
         }
 
         val color= root.attrValue(R.attr.colorPrimary)

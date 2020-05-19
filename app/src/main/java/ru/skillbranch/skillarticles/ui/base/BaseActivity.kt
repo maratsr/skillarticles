@@ -39,8 +39,6 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>>: AppCompatAct
     abstract fun subscribeOnState(state: IViewModelState)
     abstract fun renderNotification(notify: Notify)
 
-    //internal inline fun <reified T: ViewModel> provideViewModel (arg : Any?) = ViewModelDelegate(T::class.java, arg)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout)
@@ -78,9 +76,7 @@ abstract class BaseActivity<T: BaseViewModel<out IViewModelState>>: AppCompatAct
             }
 
             is NavigationCommand.StartLogin -> {
-                navController.navigate(R.id.start_login)
-                if(command.privateDestination != null) navController.navigate(command.privateDestination,
-                    bundleOf("private_destination" to (command.privateDestination ?: -1)))
+                navController.navigate(R.id.start_login, bundleOf("private_destination" to (command.privateDestination ?: -1)))
             }
         }
     }
@@ -222,7 +218,6 @@ class BottombarBuilder() {
             // show bottombar if hidden due scroll behavior
             // если вернулись с нескроллируемого объекта - показать bottombar
             ((layoutParams as CoordinatorLayout.LayoutParams).behavior as HideBottomViewOnScrollBehavior).slideUp(this)
-
         }
     }
 

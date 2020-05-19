@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.layout_bottombar.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.selectDestination
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
+import ru.skillbranch.skillarticles.ui.custom.Bottombar
 import ru.skillbranch.skillarticles.viewmodels.RootViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
@@ -29,7 +30,7 @@ class RootActivity : BaseActivity<RootViewModel>() {
         super.onCreate(savedInstanceState)
         // динамически создаем appBar и navController
         val appbarConfiguration = AppBarConfiguration(
-            setOf(R.id.nav_articles, R.id.nav_bookmarks, R.id.nav_profile, R.id.nav_transcriptions))
+            setOf(R.id.nav_articles, R.id.nav_bookmarks, R.id.nav_transcriptions, R.id.nav_profile ))
         setupActionBarWithNavController(navController, appbarConfiguration)
 
 //        nav_view.setupWithNavController(navController)
@@ -39,81 +40,22 @@ class RootActivity : BaseActivity<RootViewModel>() {
             true
         }
 
+        // Контроль перемещений между фрагментами
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
-            // if destination change set select bottom navigation item
+
+            if (viewModel.currentState.isAuth && destination.id == R.id.nav_auth) {
+                controller.popBackStack()
+                viewModel.navigate(NavigationCommand.To(R.id.nav_profile, arguments))
+            }
+
+            // if destination changes set selected bottom navigation item
             nav_view.selectDestination(destination)
         }
     }
 
-    //
-//    override fun setupViews() {
-//        setupToolbar()
-//        setupBottombar()
-//        setupSubmenu()
-//    }
-//
-//    override fun showSearchBar() {
-//        bottombar.setSearchState(true)
-//        // Необходимо добавить отступ снизу чтобы мы могли пролистать до низа весь контент (не перекрывать его панелью поиска)
-//        scroll.setMarginOptionally(bottom=dpToIntPx(56))
-//    }
-//
-//    override fun hideSearchBar() {
-//        bottombar.setSearchState(false)
-//        // Убрать отступ снизу
-//        scroll.setMarginOptionally(bottom=dpToIntPx(0))
-//    }
-//
-//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-//        menuInflater.inflate(R.menu.menu_search, menu)
-//        val menuItem = menu?.findItem(R.id.action_search)
-//        val searchView = menuItem?.actionView as? SearchView
-//
-//        if (binding.isSearch) {
-//            menuItem?.expandActionView() // Если был режим поиска - восстановим
-//            searchView?.setQuery(binding.searchQuery, false)
-//
-//            if(binding.isFocusedSearch) searchView?.requestFocus()
-//            else searchView?.clearFocus()
-//        }
-//
-//        // https://stackoverflow.com/questions/55537368/filter-for-searchview-in-kotlin
-//        with(menu!!.findItem(R.id.action_search)) {
-//            setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
-//                override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
-//                    viewModel.handleSearchMode(true)
-//                    return true
-//                }
-//
-//                override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-//                    viewModel.handleSearchMode(false)
-//                    return true
-//                }
-//            })
-//        }
-//
-//        with( menu.findItem(R.id.action_search).actionView as SearchView) {
-//            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//                override fun onQueryTextSubmit(query: String?): Boolean {
-//                    viewModel.handleSearch(query)
-//                    return true
-//                }
-//
-//                override fun onQueryTextChange(newText: String?): Boolean {
-//                    viewModel.handleSearch(newText)
-//                    return true
-//                }
-//            })
-//        }
-//        return super.onCreateOptionsMenu(menu)
-//    }
-
     override fun renderNotification(notify: Notify) {
-        val snackbar = Snackbar
-            .make(container, notify.message, Snackbar.LENGTH_LONG)
-        if (bottombar != null) snackbar.anchorView = bottombar
-        else snackbar.anchorView = nav_view
-
+        val snackbar = Snackbar.make(container, notify.message, Snackbar.LENGTH_LONG)
+        snackbar.anchorView = findViewById<Bottombar>(R.id.bottombar) ?: nav_view
 
         when (notify) { // переберем варианты представителей sealed class-а
             is Notify.TextMessage -> {
@@ -142,7 +84,6 @@ class RootActivity : BaseActivity<RootViewModel>() {
     }
 
     override fun subscribeOnState(state: IViewModelState) {
-
     }
 
 }

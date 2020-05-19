@@ -21,4 +21,4 @@ class PrivacyPolicyFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_privacy_policy, container, false)
     }
 
-}
+} // Можно просто без перегрузки onCreateView указать другой конструктор class PrivacyPolicyFragment : Fragment(R.layout.fragment_privacy_policy) {}

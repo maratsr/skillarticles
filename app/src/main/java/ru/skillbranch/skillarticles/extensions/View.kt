@@ -2,11 +2,9 @@ package ru.skillbranch.skillarticles.extensions
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.marginBottom
-import androidx.core.view.marginLeft
-import androidx.core.view.marginRight
-import androidx.core.view.marginTop
+import androidx.core.view.*
 import androidx.navigation.NavDestination
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 //Реализуй функцию расширения View.setMarginOptionally(left:Int = marginLeft, top : Int = marginTop,
 // right : Int = marginRight, bottom : Int = marginBottom), в качестве аргумента принимает значения
@@ -24,6 +22,10 @@ fun View.setPaddingOptionally(left:Int = paddingLeft, top : Int = paddingTop, ri
     setPadding(left, top, right, bottom)
 }
 
-fun View.selectDestination(dest: NavDestination?) {
-
+fun BottomNavigationView.selectDestination(dest: NavDestination) {
+    menu.findItem(dest.id)
+        ?.let {
+            it.isChecked = true } ?:
+    run {
+        menu.children.last().isChecked = true }
 }

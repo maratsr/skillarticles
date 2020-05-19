@@ -19,6 +19,8 @@ abstract class Binding {
 
     }
     abstract fun bind(data: IViewModelState)
+
+    // save/restore перегрузить при надобности работы с bundle
     open fun saveUi(outState: Bundle) {
 
     }

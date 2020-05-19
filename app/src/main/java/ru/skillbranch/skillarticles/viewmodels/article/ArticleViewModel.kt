@@ -99,7 +99,6 @@ class ArticleViewModel(
     }
 
     override fun handleLike() {
-        //updateState { it.copy(isLike = !it.isLike) }
         val toggleLike = { // Функция обработки
             val info = currentState.toArticlePersonalInfo()
             repository.updateArticlePersonalInfo(info.copy(isLike = !info.isLike))

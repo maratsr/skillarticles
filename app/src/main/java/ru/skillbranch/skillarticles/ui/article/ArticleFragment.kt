@@ -40,6 +40,8 @@ import ru.skillbranch.skillarticles.viewmodels.article.ArticleViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.ViewModelFactory
 import ru.skillbranch.skillarticles.ui.base.*
+import ru.skillbranch.skillarticles.ui.custom.ArticleSubmenu
+import ru.skillbranch.skillarticles.ui.custom.Bottombar
 
 class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     private val args: ArticleFragmentArgs by navArgs() // передаваемые между фрагментами данные
@@ -50,10 +52,10 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
     override val binding: ArticleBinding by lazy { ArticleBinding() }
 
     val bottombar
-        get() = root.bottombar
+        get() = root.findViewById<Bottombar>(R.id.bottombar) // bottombar
 
     val submenu
-        get() = root.submenu
+        get() = root.findViewById<ArticleSubmenu>(R.id.submenu) // submenu
 
     // Переопределенный toolBar
     override val prepareToolbar: (ToolbarBuilder.()-> Unit)? ={
@@ -62,7 +64,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             .setLogo(args.categoryIcon)
             .addMenuItem(
                 MenuItemHolder(
-                    "search",
+                    "Search",
                     R.id.action_search,
                     R.drawable.ic_search_black_24dp,
                     R.layout.search_view_layout
@@ -208,22 +210,6 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         }
     }
 
-//    private fun setupToolbar() {
-//        setSupportActionBar(toolbar)
-//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-//        // НАйдем logo и будем работать с ним как с ImageView вручную (так как через разметку кастомизируется не все)
-//        val logo = if (toolbar.childCount>2) toolbar.getChildAt(2) as ImageView else null
-//        logo?.scaleType = ImageView.ScaleType.CENTER_CROP
-//        val lp = logo?.layoutParams as? Toolbar.LayoutParams
-//
-//        lp?.let{
-//            it.width= this.dpToIntPx(40) // Зададим высоту и ширину лого
-//            it.height= this.dpToIntPx(40)
-//            it.marginEnd = this.dpToIntPx(16) // Зададим отступ справа
-//            logo.layoutParams = it
-//        }
-//    }
-
     private fun setupCopyListener() {
         tv_text_content.setCopyListener{copy ->
             val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -280,9 +266,9 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             }
         }
 
-        private var searchResults: List<Pair<Int, Int>> by RenderProp(emptyList())
+        private var searchResults: List<Pair<Int, Int>> by RenderProp(emptyList<Pair<Int, Int>>())
         private var searchPosition: Int by RenderProp(0)
-        private var content: List<MarkdownElement> by RenderProp(emptyList()) {
+        private var content: List<MarkdownElement> by RenderProp(emptyList<MarkdownElement>()) {
             tv_text_content.isLoading = it.isEmpty()
             tv_text_content.setContent(it)
             if (it.isNotEmpty()) setupCopyListener()
@@ -330,7 +316,3 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
         }
     }
 }
-
-//private var title: String by RenderProp ("loading") {toolbar.title = it }
-//private var category: String by RenderProp ("loading") {toolbar.subtitle = it }
-//private var categoryIcon: Int by RenderProp (R.drawable.logo_placeholder) {toolbar.logo =getDrawable(it) }

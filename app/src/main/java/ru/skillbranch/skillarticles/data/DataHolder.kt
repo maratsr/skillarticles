@@ -160,7 +160,8 @@ data class ArticleItemData(
     val categoryIcon: String = "https://skill-branch.ru/img/mail/bot/android-category.png",
     val likeCount: Int = 16,
     val commentCount: Int = 2,
-    val readDuration: Int = 3
+    val readDuration: Int = 3,
+    val isBookmark: Boolean = false
 )
 
 val article1: String = """

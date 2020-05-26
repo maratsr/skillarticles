@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_articles.*
 
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.data.ArticleItemData
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.ui.base.Binding
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
@@ -37,17 +36,25 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             adapter = articlesAdapter
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
         }
+        // Подписка на список
+        viewModel.observeList(viewLifecycleOwner) { data -> articlesAdapter.submitList(data)}
     }
 
-    inner class ArticlesBinding :Binding() {
-        private var articles: List<ArticleItemData> by RenderProp(emptyList()) {
-            articlesAdapter.submitList(it)
+    inner class ArticlesBinding : Binding() {
+        var isFocusedSearch = false
+        var searchQuery: String? = null
+        var isSearch = false
+        var isLoading: Boolean by RenderProp(true) {
+            // TODO: Show shimmer on rv_list
         }
 
         override fun bind(data: IViewModelState) {
             data as ArticlesState
-            articles = data.articles
+            isSearch = data.isSearch
+            searchQuery = data.searchQuery
+            isLoading = data.isLoading
         }
 
+        // TODO: save ui
     }
 }

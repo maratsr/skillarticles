@@ -33,7 +33,6 @@ class RootActivity : BaseActivity<RootViewModel>() {
             setOf(R.id.nav_articles, R.id.nav_bookmarks, R.id.nav_transcriptions, R.id.nav_profile ))
         setupActionBarWithNavController(navController, appbarConfiguration)
 
-//        nav_view.setupWithNavController(navController)
         nav_view.setOnNavigationItemSelectedListener {
             // if click on bottom navigation item -> navigate to destination by item.id
             viewModel.navigate(NavigationCommand.To(it.itemId))
@@ -47,7 +46,6 @@ class RootActivity : BaseActivity<RootViewModel>() {
                 controller.popBackStack()
                 viewModel.navigate(NavigationCommand.To(R.id.nav_profile, arguments))
             }
-
             // if destination changes set selected bottom navigation item
             nav_view.selectDestination(destination)
         }

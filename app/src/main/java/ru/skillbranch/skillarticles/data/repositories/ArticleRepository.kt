@@ -4,6 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import ru.skillbranch.skillarticles.data.*
+import ru.skillbranch.skillarticles.data.models.AppSettings
+import ru.skillbranch.skillarticles.data.models.ArticleData
+import ru.skillbranch.skillarticles.data.models.ArticlePersonalInfo
 
 // Singleton репозиторий - эмуляция получения данных
 object ArticleRepository {

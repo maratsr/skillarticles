@@ -7,20 +7,45 @@ import androidx.paging.PositionalDataSource
 import ru.skillbranch.skillarticles.data.LocalDataHolder
 import ru.skillbranch.skillarticles.data.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.models.ArticleItemData
+import java.lang.Thread.sleep
 
 object ArticlesRepository {
     private val local = LocalDataHolder
     private val network = NetworkDataHolder
 
-    fun allArticles(): DataSource.Factory<Int, ArticleItemData> = ArticlesDataFactory(ArticleStrategy.AllArticles(::findArticlesByRange))
+    fun allArticles(): ArticlesDataFactory = ArticlesDataFactory(ArticleStrategy.AllArticles(::findArticlesByRange))
 
     private fun findArticlesByRange(start: Int, size: Int) = local.localArticleItems
         .drop(start) // Перенесемся на стартовую позицию
         .take(size) // Отдадим нужное число ArticleItemData
+
+    fun searchArticles(searchQuery: String): ArticlesDataFactory =
+        ArticlesDataFactory(ArticleStrategy.SearchArticle(::searchArticlesByTitle, searchQuery))
+
+    private fun searchArticlesByTitle(start: Int, size: Int, queryTitle: String): List<ArticleItemData> =
+        local.localArticleItems
+            .asSequence()
+            .filter { it.title.contains(queryTitle, ignoreCase = true) }
+            .drop(start)
+            .take(size)
+            .toList()
+
+    fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleItemData> =
+        network.networkArticleItems
+            .drop(start)
+            .take(size)
+            .apply { sleep(500) } // Задержка для имитации получения по сети
+
+    fun insertArticlesToDb(articles: List<ArticleItemData>) {
+        local.localArticleItems
+            .addAll(articles)
+            .apply { sleep(100) }// Задержка для имитации вставки в СУБД
+    }
+
 }
 
 // Создание DataSource по соответствующей стратегии
-class ArticlesDataFactory(private val strategy: ArticleStrategy) : DataSource.Factory<Int, ArticleItemData>() {
+class ArticlesDataFactory(val strategy: ArticleStrategy) : DataSource.Factory<Int, ArticleItemData>() {
     override fun create(): DataSource<Int, ArticleItemData> {
         return ArticleDataSource(strategy)
     }

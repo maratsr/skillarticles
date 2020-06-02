@@ -8,6 +8,7 @@ import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
 import ru.skillbranch.skillarticles.data.*
 import ru.skillbranch.skillarticles.data.models.*
+import java.lang.Thread.sleep
 import kotlin.math.abs
 
 // Singleton репозиторий - эмуляция получения данных
@@ -52,7 +53,7 @@ object ArticleRepository {
             size > 0 -> data.dropWhile { it.slug != slug }.drop(1).take(size)
             size < 0 -> data.dropLastWhile { it.slug != slug }.dropLast(1).takeLast(abs(size)) // отбросим с конца
             else -> emptyList()
-        }
+        }.apply {sleep(500)} // имитация задержки
     }
 
     fun sendComment(articleId: String, comment: String, answerToSlug: String?) {

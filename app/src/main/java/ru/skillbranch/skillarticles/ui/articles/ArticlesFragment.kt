@@ -39,14 +39,27 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     }
 
 
-    private val articlesAdapter = ArticlesAdapter {item ->
-        Log.d("ArticlesFragment", "click on article ${item.id}")
-        // данные для перемещения на фрагмент
-        val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(item.id, item.author,
-            item.authorAvatar, item.category, item.categoryIcon, item.date, item.poster, item.title)
-        viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
-
-    }
+    private val articlesAdapter = ArticlesAdapter(
+        articleListener = { item ->
+            Log.d("ArticlesFragment", "click on article ${item.id}")
+            // данные для перемещения на фрагмент
+            val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
+                item.id,
+                item.author,
+                item.authorAvatar,
+                item.category,
+                item.categoryIcon,
+                item.date,
+                item.poster,
+                item.title
+            )
+            viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
+        },
+        bookmarkListener = { id, isChecked ->
+            Log.e("bookmarkListener (AA)","  id $id, isChecked $isChecked")
+            viewModel.handleToggleBookmark(id, isChecked)
+        }
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,7 +134,5 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             searchQuery = data.searchQuery
             isLoading = data.isLoading
         }
-
-        // TODO: save ui
     }
 }

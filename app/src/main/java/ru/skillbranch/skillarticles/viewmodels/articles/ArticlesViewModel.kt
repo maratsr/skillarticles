@@ -104,19 +104,25 @@ class ArticlesViewModel(handle: SavedStateHandle) : BaseViewModel<ArticlesState>
         updateState { it.copy(isSearch = isSearch)}
     }
 
-//    private fun buildPagedList(dataFactory: ArticlesDataFactory): LiveData<PagedList<ArticleItemData>> {
-//        val builder = LivePagedListBuilder<Int, ArticleItemData>(dataFactory, listConfig)
-//
-//        if (dataFactory.strategy is ArticleStrategy.AllArticles) {
-//            builder.setBoundaryCallback(ArticlesBoundaryCallback(::zeroLoadingHandle, ::itemAtEndHandle))
-//        }
-//
-//        return builder.setFetchExecutor(Executors.newSingleThreadExecutor()).build()
-//    }
+    fun handleToggleBookmark(id: String, isChecked: Boolean) {
+        repository.updateBookmark(id, isChecked)
+        listData.value?.dataSource?.invalidate()
+    }
 }
 
 data class ArticlesState(
-    val isSearch: Boolean = false, val searchQuery: String? = null, val isLoading: Boolean = true): IViewModelState
+    val isSearch: Boolean = false, val searchQuery: String? = null, val isLoading: Boolean = true): IViewModelState {
+    override fun save(outState: SavedStateHandle) {
+        outState.set(::isSearch.name, isSearch)
+        outState.set(::searchQuery.name, searchQuery)
+        outState.set(::isLoading.name, isLoading)
+    }
+
+    override fun restore(savedState: SavedStateHandle): IViewModelState = copy(
+        isSearch = savedState.get<Boolean>(::isSearch.name) ?: false,
+        searchQuery = savedState.get<String>(::searchQuery.name),
+        isLoading = savedState.get<Boolean>(::isLoading.name) ?: true)
+}
 
 
 // Класс для задания callback событий, передавая их при создании

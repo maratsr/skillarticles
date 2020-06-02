@@ -267,7 +267,7 @@ class ArticleItemView constructor(
         )
     }
 
-    fun bind(item: ArticleItemData) {
+    fun bind(item: ArticleItemData,  bookmarkListener: (String, Boolean) -> Unit) {
 
         tv_date.text = item.date.format() //shortFormat
         tv_author.text = item.author
@@ -289,7 +289,9 @@ class ArticleItemView constructor(
         tv_likes_count.text = "${item.likeCount}"
         tv_comments_count.text = "${item.commentCount}"
         tv_read_duration.text = "${item.readDuration} min read"
-        //iv_bookmark.isChecked = item.isBookmark
-        //iv_bookmark.setOnClickListener { toggleBookmarkListener.invoke(item.id, item.isBookmark) }
+
+        // Обработа bookmark-ов
+        iv_bookmark.isChecked = item.isBookmark
+        iv_bookmark.setOnClickListener { bookmarkListener.invoke(item.id, item.isBookmark) }
     }
 }

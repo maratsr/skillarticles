@@ -36,12 +36,37 @@ object ArticlesRepository {
             .take(size)
             .apply { sleep(500) } // Задержка для имитации получения по сети
 
-    fun insertArticlesToDb(articles: List<ArticleItemData>) {
+    fun insertArticlesToDb(articles: List<ArticleItemData>)=
         local.localArticleItems
             .addAll(articles)
             .apply { sleep(100) }// Задержка для имитации вставки в СУБД
-    }
 
+
+    fun updateBookmark(id: String, checked: Boolean)  =
+        local.localArticleItems.find{ it.id == id}?.let{
+            local.localArticleItems[local.localArticleItems.indexOf(it)] = it.copy(isBookmark = !checked)
+        }
+
+    fun getBookmarksArticles(): ArticlesDataFactory = ArticlesDataFactory(ArticleStrategy.BookmarkArticles { start, size ->
+        local.localArticleItems
+            .asSequence()
+            .filter { it.isBookmark}
+            .drop(start)
+            .take(size)
+            .toList()
+    })
+
+    fun searchBookmarksArticles(searchQuery: String): ArticlesDataFactory= ArticlesDataFactory(ArticleStrategy.SearchBookmark(
+                itemProvider = { start, size, query ->
+                    local.localArticleItems
+                        .asSequence()
+                        .filter { it.isBookmark && it.title.contains(query, ignoreCase = true) }
+                        .drop(start)
+                        .take(size)
+                        .toList()
+                },
+                query = searchQuery
+            ))
 }
 
 // Создание DataSource по соответствующей стратегии
@@ -72,18 +97,20 @@ sealed class ArticleStrategy { // Разные источники данных
 
     // Загрузить все статьи
     class AllArticles(private val itemProvider: (Int, Int) -> List<ArticleItemData>): ArticleStrategy() {
-        override fun getItems(start: Int, size: Int): List<ArticleItemData> {
-            return itemProvider(start, size)
-        }
+        override fun getItems(start: Int, size: Int): List<ArticleItemData> =itemProvider(start, size)
     }
 
     // Загрузить статьи содержащие строку поиска
     class SearchArticle(private val itemProvider: (Int, Int, String) -> List<ArticleItemData>, private val query: String): ArticleStrategy() {
-        override fun getItems(start: Int, size: Int): List<ArticleItemData> {
-            return itemProvider(start, size, query)
-        }
+        override fun getItems(start: Int, size: Int): List<ArticleItemData> = itemProvider(start, size, query)
     }
 
-    // TODO — Bookmarks strategy
+    class BookmarkArticles(private val itemProvider: (Int, Int) -> List<ArticleItemData>): ArticleStrategy() {
+        override fun getItems(start: Int, size: Int): List<ArticleItemData> = itemProvider(start, size)
+    }
+
+    class SearchBookmark(private val itemProvider: (Int, Int, String) -> List<ArticleItemData>, private val query: String): ArticleStrategy() {
+        override fun getItems(start: Int, size: Int): List<ArticleItemData> = itemProvider(start, size, query)
+    }
 
 }

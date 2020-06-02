@@ -4,12 +4,11 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_root.*
-import kotlinx.android.synthetic.main.layout_bottombar.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.extensions.selectDestination
+import ru.skillbranch.skillarticles.extensions.selectItem
 import ru.skillbranch.skillarticles.ui.base.BaseActivity
 import ru.skillbranch.skillarticles.ui.custom.Bottombar
 import ru.skillbranch.skillarticles.viewmodels.RootViewModel
@@ -34,21 +33,31 @@ class RootActivity : BaseActivity<RootViewModel>() {
         setupActionBarWithNavController(navController, appbarConfiguration)
 
         nav_view.setOnNavigationItemSelectedListener {
-            // if click on bottom navigation item -> navigate to destination by item.id
             viewModel.navigate(NavigationCommand.To(it.itemId))
             true
         }
 
-        // Контроль перемещений между фрагментами
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            nav_view.selectDestination(destination)
+            if (destination.id == R.id.nav_auth) nav_view.selectItem(arguments?.get("private_destination") as Int?)
 
             if (viewModel.currentState.isAuth && destination.id == R.id.nav_auth) {
                 controller.popBackStack()
                 viewModel.navigate(NavigationCommand.To(R.id.nav_profile, arguments))
             }
-            // if destination changes set selected bottom navigation item
-            nav_view.selectDestination(destination)
         }
+
+
+        // Контроль перемещений между фрагментами
+//        navController.addOnDestinationChangedListener { controller, destination, arguments ->
+//
+//            if (viewModel.currentState.isAuth && destination.id == R.id.nav_auth) {
+//                controller.popBackStack()
+//                viewModel.navigate(NavigationCommand.To(R.id.nav_profile, arguments))
+//            }
+//            // if destination changes set selected bottom navigation item
+//            nav_view.selectDestination(destination)
+//        }
     }
 
     override fun renderNotification(notify: Notify) {

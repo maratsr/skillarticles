@@ -29,3 +29,11 @@ fun BottomNavigationView.selectDestination(dest: NavDestination) {
     run {
         menu.children.last().isChecked = true }
 }
+
+fun BottomNavigationView.selectItem(itemId: Int?){
+    itemId?.let{
+        menu.findItem(itemId)?.let{
+            it.isChecked = true
+        }
+    }
+}

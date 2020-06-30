@@ -4,18 +4,20 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.util.forEach
 import androidx.core.util.isEmpty
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
+import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.extensions.groupByBounds
 import ru.skillbranch.skillarticles.extensions.setPaddingOptionally
+import ru.skillbranch.skillarticles.ui.custom.ShimmerDrawable
 import kotlin.properties.Delegates
 
 class MarkdownContentView @JvmOverloads constructor(
@@ -24,55 +26,136 @@ class MarkdownContentView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : ViewGroup(context, attrs, defStyleAttr) {
     private lateinit var elements: List<MarkdownElement>
-   // private var layoutManager: LayoutManager = LayoutManager()
-    companion object {
-        public var layoutManager = LayoutManager()
-    }
+    private var layoutManager: LayoutManager = LayoutManager()
 
-    // Отслеживает изменения получения нового значения, по окончании - запускает лямбду (название свойства, старое, новое значение)
     var textSize by Delegates.observable(14f) { _, old, value ->
         if (value == old) return@observable
         this.children.forEach {
-            // Всем дочерним устанавливаем новое значение
             it as IMarkdownView
             it.fontSize = value
         }
     }
+    var isLoading by Delegates.observable(false) { _, _, newValue ->
+        Log.e("MarkdownContentView", "isLoading : $newValue");
+        if (!newValue) hideShimmer()
+        else showShimmer()
+    }
+    private val defaultSpace = context.dpToIntPx(8)
+    private val defaultPadding = context.dpToIntPx(16)
+    private val lineHeight = context.dpToIntPx(14)
+    private val miniLineHeight = context.dpToIntPx(12)
+    private val shimmerWidth = resources.displayMetrics.widthPixels - context.dpToIntPx(32)
 
-    var isLoading: Boolean = true
-    val padding = context.dpToIntPx(8)
+    private val shimmerDrawable by lazy {
+        ShimmerDrawable.Builder()
+            .setShimmerWidth(shimmerWidth)
+            .addShape(
+                ShimmerDrawable.Shape.TextRow(
+                    shimmerWidth,
+                    6,
+                    lineHeight = lineHeight,
+                    lineSpace = defaultSpace,
+                    cornerRadius = defaultSpace,
+                    offset = defaultPadding to defaultPadding
+                )
+            )
+            .addShape(
+                ShimmerDrawable.Shape.ImagePlaceholder(
+                    shimmerWidth,
+                    16 / 9f,
+                    borderWidth = defaultSpace,
+                    cornerRadius = defaultSpace,
+                    offset = defaultPadding to defaultSpace
+                )
+            )
+            .addShape(
+                ShimmerDrawable.Shape.TextRow(
+                    shimmerWidth - 4 * defaultPadding,
+                    1,
+                    lineHeight = miniLineHeight,
+                    lineSpace = defaultSpace / 2,
+                    cornerRadius = defaultSpace,
+                    offset = 3 * defaultPadding to defaultSpace
+                )
+            )
+            .addShape(
+                ShimmerDrawable.Shape.TextRow(
+                    shimmerWidth,
+                    4,
+                    lineHeight = lineHeight,
+                    lineSpace = defaultSpace,
+                    cornerRadius = defaultSpace,
+                    offset = defaultPadding to defaultPadding
+                )
+            )
+            .addShape(
+                ShimmerDrawable.Shape.Rectangle(
+                    shimmerWidth ,
+                    context.dpToIntPx(56),
+                    cornerRadius = defaultSpace,
+                    offset = defaultPadding to defaultSpace
+                )
+            )
+            .addShape(
+                ShimmerDrawable.Shape.TextRow(
+                    shimmerWidth,
+                    4,
+                    lineHeight = lineHeight,
+                    lineSpace = defaultSpace,
+                    offset = defaultPadding to defaultPadding
+                )
+            )
+            .itemPatternCount(3)
+            .setBaseColor(context.getColor(R.color.color_gray_light))
+            .setHighlightColor(context.getColor(R.color.color_divider))
+            .build()
+    }
 
+    init {
+        addOnAttachStateChangeListener(object : OnAttachStateChangeListener {
+            override fun onViewDetachedFromWindow(v: View?) {
+                shimmerDrawable.stop()
+            }
+
+            override fun onViewAttachedToWindow(v: View?) {/*nothing*/}
+        })
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var usedHeight = paddingTop
         val width = getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
 
         children.forEach {
-            // Перебираем потомков и увеличиваем текущую высоту
             measureChild(it, widthMeasureSpec, heightMeasureSpec)
             usedHeight += it.measuredHeight
         }
 
-        usedHeight += paddingBottom // учитываем паддинг
-        setMeasuredDimension(width, usedHeight) // устанавливаем размер корневой viewgroup-ы
+        usedHeight += paddingBottom
+        setMeasuredDimension(width, if (usedHeight < minimumHeight) minimumHeight else usedHeight)
     }
 
-    // Компоновка ViewGroup-ы
+
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         var usedHeight = paddingTop
-        val bodyWidth = right - left - paddingLeft- paddingRight
+        val bodyWidth = right - left - paddingLeft - paddingRight
         val left = paddingLeft
         val right = paddingLeft + bodyWidth
 
         children.forEach {
-            // Выставляем границы дочерних элементов
             if (it is MarkdownTextView) {
                 it.layout(
-                    left - paddingLeft / 2, usedHeight,
-                    r - paddingRight / 2, usedHeight + it.measuredHeight
+                    left - paddingLeft / 2,
+                    usedHeight,
+                    r - paddingRight / 2,
+                    usedHeight + it.measuredHeight
                 )
             } else {
-                it.layout(left, usedHeight, right, usedHeight + it.measuredHeight)
+                it.layout(
+                    left,
+                    usedHeight,
+                    right,
+                    usedHeight + it.measuredHeight
+                )
             }
             usedHeight += it.measuredHeight
         }
@@ -85,8 +168,11 @@ class MarkdownContentView @JvmOverloads constructor(
             when (it) {
                 is MarkdownElement.Text -> {
                     val tv = MarkdownTextView(context, textSize).apply {
-                        setPaddingOptionally(left = padding, right = padding)
-                        setLineSpacing(fontSize * 0.5f, 1f) // Местрочный интервал
+                        setPaddingOptionally(
+                            left = defaultSpace,
+                            right = defaultSpace
+                        )
+                        setLineSpacing(fontSize * 0.5f, 1f)
                     }
 
                     MarkdownBuilder(context)
@@ -100,16 +186,23 @@ class MarkdownContentView @JvmOverloads constructor(
 
                 is MarkdownElement.Image -> {
                     val iv = MarkdownImageView(
-                        context, textSize, it.image.url, it.image.text, it.image.alt)
+                        context,
+                        textSize,
+                        it.image.url,
+                        it.image.text,
+                        it.image.alt
+                    )
                     addView(iv)
                     layoutManager.attachToParent(iv, index)
                     index++
-
                 }
 
                 is MarkdownElement.Scroll -> {
                     val sv = MarkdownCodeView(
-                        context, textSize, it.blockCode.text)
+                        context,
+                        textSize,
+                        it.blockCode.text
+                    )
                     addView(sv)
                     layoutManager.attachToParent(sv, index)
                     index++
@@ -118,33 +211,30 @@ class MarkdownContentView @JvmOverloads constructor(
         }
     }
 
-    // В какой child view искать и кула передать правильные смещения
     fun renderSearchResult(searchResult: List<Pair<Int, Int>>) {
-        // searchResult - границы (первый и последний символ найденных подстрок) в тексте результатов поиска
-        children.forEach {view ->
+        children.forEach { view ->
             view as IMarkdownView
             view.clearSearchResult()
         }
 
-        if(searchResult.isEmpty()) return
+        if (searchResult.isEmpty()) return
 
-        // Bounds - границы контента View
         val bounds = elements.map { it.bounds }
-        // Список1 из списков2. 1- дочерние View родительской ViewGroup, внутри которого список2-
-        // границы (первый и последний символ найденных подстрок) в контексте дочернего результатов поиска
         val result = searchResult.groupByBounds(bounds)
 
         children.forEachIndexed { index, view ->
             view as IMarkdownView
-            // search for child view with markdown element offset
+            //search for child with markdown element offset
             view.renderSearchResult(result[index], elements[index].offset)
         }
-
     }
 
-    fun renderSearchPosition(searchPosition: Pair<Int, Int>?, force: Boolean = false) {
+    fun renderSearchPosition(
+        searchPosition: Pair<Int, Int>?
+    ) {
         searchPosition ?: return
         val bounds = elements.map { it.bounds }
+
         val index = bounds.indexOfFirst { (start, end) ->
             val boundRange = start..end
             val (startPos, endPos) = searchPosition
@@ -157,7 +247,6 @@ class MarkdownContentView @JvmOverloads constructor(
         view.renderSearchPosition(searchPosition, elements[index].offset)
     }
 
-
     fun clearSearchResult() {
         children.forEach { view ->
             view as IMarkdownView
@@ -165,9 +254,8 @@ class MarkdownContentView @JvmOverloads constructor(
         }
     }
 
-
     fun setCopyListener(listener: (String) -> Unit) {
-        children.filterIsInstance<MarkdownCodeView>() // Если MarkdownCodeView
+        children.filterIsInstance<MarkdownCodeView>()
             .forEach { it.copyListener = listener }
     }
 
@@ -177,27 +265,38 @@ class MarkdownContentView @JvmOverloads constructor(
         return state
     }
 
-    override fun onRestoreInstanceState(state: Parcelable) {
+    override fun onRestoreInstanceState(state: Parcelable?) {
         super.onRestoreInstanceState(state)
-        if (state is SavedState)
-            layoutManager = state.layout
+        if (state is SavedState) layoutManager = state.layout
     }
 
-    // Сохраняем состояние дочерних представлений
     override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>?) {
         //save children manually without markdown text view
-        children.filter { it !is MarkdownTextView } // Сохраняем представления только MarkdownImageView и CodeView
+        children.filter { it !is MarkdownTextView }
             .forEach { it.saveHierarchyState(layoutManager.container) }
         //save only markdownContentView
         dispatchFreezeSelfOnly(container)
     }
 
-    class LayoutManager() : Parcelable { // Контейнер для хранения идентификаторов дочерних представлений
+    private fun hideShimmer() {
+//        shimmerDrawable.stop()
+        (foreground as? ShimmerDrawable)?.stop()
+        foreground = null
+    }
+
+    private fun showShimmer() {
+//        shimmerListener = doOnPreDraw {
+            foreground = shimmerDrawable
+            shimmerDrawable.start()
+//        }
+    }
+
+    private class LayoutManager() : Parcelable {
         var ids: MutableList<Int> = mutableListOf()
-        var container: SparseArray<Parcelable> = SparseArray() // состояния дочерних элементов
+        var container: SparseArray<Parcelable> = SparseArray()
 
         constructor(parcel: Parcel) : this() {
-            ids = parcel.readArrayList(Int::class.java.classLoader) as ArrayList<Int>
+            ids = parcel.createIntArray()!!.toMutableList()
             container =
                 parcel.readSparseArray<Parcelable>(this::class.java.classLoader) as SparseArray<Parcelable>
         }
@@ -222,6 +321,7 @@ class MarkdownContentView @JvmOverloads constructor(
         companion object CREATOR : Parcelable.Creator<LayoutManager> {
             override fun createFromParcel(parcel: Parcel): LayoutManager = LayoutManager(parcel)
             override fun newArray(size: Int): Array<LayoutManager?> = arrayOfNulls(size)
+
         }
     }
 
@@ -246,6 +346,7 @@ class MarkdownContentView @JvmOverloads constructor(
 
         companion object CREATOR : Parcelable.Creator<SavedState> {
             override fun createFromParcel(parcel: Parcel) = SavedState(parcel)
+
             override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
         }
     }

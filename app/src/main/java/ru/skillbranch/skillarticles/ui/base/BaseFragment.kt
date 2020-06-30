@@ -4,36 +4,37 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.activity_root.*
-import kotlinx.android.synthetic.main.layout_bottombar.*
-import kotlinx.android.synthetic.main.layout_submenu.*
 import ru.skillbranch.skillarticles.ui.RootActivity
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 
-abstract class BaseFragment<T: BaseViewModel<out IViewModelState>>: Fragment() {
-    // ссылка на владеющим им Activity
+abstract class BaseFragment<T : BaseViewModel<out IViewModelState>> : Fragment() {
     val root: RootActivity
         get() = activity as RootActivity
-
     open val binding: Binding? = null
     protected abstract val viewModel: T
     protected abstract val layout: Int
 
-    open val prepareToolbar: (ToolbarBuilder.()-> Unit)? = null
-    open val prepareBottombar: (BottombarBuilder.()-> Unit)? = null
+    open val prepareToolbar: (ToolbarBuilder.() -> Unit)? = null
+    open val prepareBottombar: (BottombarBuilder.() -> Unit)? = null
+
     val toolbar
         get() = root.toolbar
 
     //set listeners, tuning views
     abstract fun setupViews()
 
-    // Раздуем из xml разметки
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? = inflater.inflate(layout, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? = inflater.inflate(layout, container, false)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        //prepare toolbar
         root.toolbarBuilder
             .invalidate()
             .prepare(prepareToolbar)
@@ -44,19 +45,18 @@ abstract class BaseFragment<T: BaseViewModel<out IViewModelState>>: Fragment() {
             .prepare(prepareBottombar)
             .build(root)
 
+        //restore state
         viewModel.restoreState()
         binding?.restoreUi(savedInstanceState)
 
-        //следим за изменениями цикла фрагментов (отличается от цикла activity)
-        viewModel.observeState(viewLifecycleOwner) { binding?.bind(it)}
-
-        // bind default values if view model not loaded data
+        //owner it is view
+        viewModel.observeState(viewLifecycleOwner) { binding?.bind(it) }
+        //bind default values if viewmodel not loaded data
         if (binding?.isInflated == false) binding?.onFinishInflate()
 
-        //Информируем rootActivity об изменениях
-        viewModel.observeNotifications(viewLifecycleOwner) { root.renderNotification(it)}
+        viewModel.observeNotifications(viewLifecycleOwner) { root.renderNotification(it) }
+        viewModel.observeNavigation(viewLifecycleOwner) { root.viewModel.navigate(it) }
 
-        viewModel.observeNavigation(viewLifecycleOwner) { root.viewModel.navigate(it)}
         setupViews()
     }
 
@@ -72,17 +72,19 @@ abstract class BaseFragment<T: BaseViewModel<out IViewModelState>>: Fragment() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
-        // посмотрим на текущий toolbar
         if (root.toolbarBuilder.items.isNotEmpty()) {
-            for((index, menuHolder) in root.toolbarBuilder.items.withIndex()) {
+            for ((index, menuHolder) in root.toolbarBuilder.items.withIndex()) {
                 val item = menu.add(0, menuHolder.menuId, index, menuHolder.title)
                 item.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS or MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
                     .setIcon(menuHolder.icon)
                     .setOnMenuItemClickListener {
-                        menuHolder.clickListener?.invoke(it).let{true} ?: false }
+                        menuHolder.clickListener?.invoke(it)?.let { true } ?: false
+                    }
+
                 if (menuHolder.actionViewLayout != null) item.setActionView(menuHolder.actionViewLayout)
             }
         } else menu.clear()
         super.onPrepareOptionsMenu(menu)
     }
+
 }

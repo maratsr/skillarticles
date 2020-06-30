@@ -38,20 +38,19 @@ class IconLinkSpan(
         bottom: Int,
         paint: Paint
     ) {
-        val textStart= x + iconSize + padding
-        paint.forLine { // подч
-            path.reset() // сбрасываем
-            path.moveTo(textStart, y + paint.descent() ) // Смещаемся до позиции после иконки
-            path.lineTo(textStart + textWidth, y + paint.descent()) // Линия до конца текста, ранее было bottom.toFloat()
+        val textStart = x + iconSize + padding
+        paint.forLine {
+            path.reset()
+            path.moveTo(textStart, y + paint.descent())
+            path.lineTo(textStart + textWidth, y + paint.descent())
             canvas.drawPath(path, paint)
         }
 
         canvas.save()
-        val trY =  y + paint.descent() - linkDrawable.bounds.bottom
+        val trY = y + paint.descent() - linkDrawable.bounds.bottom
         canvas.translate(x + padding/2f, trY)
         linkDrawable.draw(canvas)
         canvas.restore()
-
 
         paint.forText {
             canvas.drawText(text, start, end, textStart, y.toFloat(), paint)
@@ -66,8 +65,9 @@ class IconLinkSpan(
         end: Int,
         fm: Paint.FontMetricsInt?
     ): Int {
-        if (fm != null){
-            iconSize = fm.descent - fm.ascent // размер фонта
+
+        if (fm != null) {
+            iconSize = fm.descent - fm.ascent //fontSize
             linkDrawable.setBounds(0, 0, iconSize, iconSize)
         }
         textWidth = paint.measureText(text.toString(), start, end)
@@ -80,14 +80,13 @@ class IconLinkSpan(
         val oldStyle = style
         val oldWidth = strokeWidth
 
-        pathEffect = dashs // прерывистая линия
+        pathEffect = dashs
         color = textColor
-        style = Paint.Style.STROKE // просто линия
+        style = Paint.Style.STROKE
         strokeWidth = 0f
 
-
         block()
-        // Восстановим старый цвет - чтобы bullet цветом не продолжил рисовать прочие элементы
+
         color = oldColor
         style = oldStyle
         strokeWidth = oldWidth
@@ -95,8 +94,12 @@ class IconLinkSpan(
 
     private inline fun Paint.forText(block: () -> Unit) {
         val oldColor = color
+
         color = textColor
+
         block()
+
         color = oldColor
     }
+
 }

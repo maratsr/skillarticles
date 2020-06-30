@@ -3,26 +3,25 @@ package ru.skillbranch.skillarticles.data.repositories
 import java.util.regex.Pattern
 
 object MarkdownParser {
-
-    private val LINE_SEPARATOR =  System.getProperty("line.separator") ?: "\n"
-
     //group regex
     private const val UNORDERED_LIST_ITEM_GROUP = "(^[*+-] .+$)" // ненумерованный список имеет формать +-* пробел текст
     private const val HEADER_GROUP = "(^#{1,6} .+?$)" // заголовки, стартующие с 1 до 6 символов #
-    private const val QUOTE_GROUP = "(^> .+?\$)" // цитирование начинается с символа >
+    private const val QUOTE_GROUP = "(^> .+?$)" // цитирование начинается с символа >
     private const val ITALIC_GROUP = "((?<!\\*)\\*[^*].*?[^*]?\\*(?!\\*)|(?<!_)_[^_].*?[^_]?_(?!_))" // italic - окружение текста символами _ или *
-    private const val BOLD_GROUP ="((?<!\\*)\\*{2}[^*].*?[^*]?\\*{2}(?!\\*)|(?<!_)_{2}[^_].*?[^_]?_{2}(?!_))" // bold - окружение текста символами __ или **
-    private const val STRIKE_GROUP = "((?<!~)~{2}[^~].*?[^~]?~{2}(?!~))" //strike - окружение текста символами ~~
+    private const val BOLD_GROUP =
+        "((?<!\\*)\\*{2}[^*].*?[^*]?\\*{2}(?!\\*)|(?<!_)_{2}[^_].*?[^_]?_{2}(?!_))" // bold - окружение текста символами __ или **
+    private const val STRIKE_GROUP = "(~~.+?~~)" //strike - окружение текста символами ~~
     private const val RULE_GROUP = "(^[-_*]{3}$)" // --- ___ *** - горизонтальный разделитель
     private const val INLINE_GROUP = "((?<!`)`[^`\\s].*?[^`\\s]?`(?!`))" //текст окруженный ` штрихом)
-    private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|\\[*?]\\(.*?\\))"  // ссылка [title](url) [I`am yandex link](https://www.yandex.ru)
-    private const val BLOCK_CODE_GROUP = "(^```[\\S\\s]+?```)"//"(^```[\\s\\S]+```$)"
-    private const val ORDER_LIST_GROUP = "(^\\d{1,2}\\.\\s.+?$)"
-    private const val IMAGE_GROUP = "(^!\\[[^\\[\\]]*?\\]\\(.*?\\)$)" // изображение в формате ![alt](url "title")
+    private const val LINK_GROUP = "(\\[[^\\[\\]]*?]\\(.+?\\)|^\\[*?]\\(.*?\\))" // ссылка [title](url) [I`am yandex link](https://www.yandex.ru)
+    private const val BLOCK_CODE_GROUP = "(^```[\\s\\S]+?```$)" //group 10
+    private const val ORDER_LIST_GROUP = "(^\\d{1,2}\\.\\s.+?$)" //group 11
+    private const val IMAGE_GROUP = "(^!\\[[^\\[\\]]*?\\]\\(.*?\\)$)" //group 11 // изображение в формате ![alt](url "title")
 
     //result regex
     private const val MARKDOWN_GROUPS = "$UNORDERED_LIST_ITEM_GROUP|$HEADER_GROUP|$QUOTE_GROUP" +
-            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP|$BLOCK_CODE_GROUP|$ORDER_LIST_GROUP|$IMAGE_GROUP"
+            "|$ITALIC_GROUP|$BOLD_GROUP|$STRIKE_GROUP|$RULE_GROUP|$INLINE_GROUP|$LINK_GROUP" +
+            "|$BLOCK_CODE_GROUP|$ORDER_LIST_GROUP|$IMAGE_GROUP"
 
     private val elementsPattern by lazy { Pattern.compile(MARKDOWN_GROUPS, Pattern.MULTILINE) }
 
@@ -33,42 +32,33 @@ object MarkdownParser {
     fun parse(string: String): List<MarkdownElement> { // Парсит элементы разметки
         val elements = mutableListOf<Element>()
         elements.addAll(findElements(string))
-        return elements.fold(mutableListOf()) { acc, el ->
+        return elements.fold(mutableListOf()) { acc, element ->
             val last = acc.lastOrNull()
-            when (el) {
-                is Element.Image -> acc.add(MarkdownElement.Image(el, last?.bounds?.second ?: 0))
-                is Element.BlockCode -> acc.add(MarkdownElement.Scroll(el, last?.bounds?.second ?: 0))
+            when (element) {
+                is Element.Image -> acc.add(
+                    MarkdownElement.Image(
+                        element,
+                        last?.bounds?.second ?: 0
+                    )
+                )
+                is Element.BlockCode -> acc.add(
+                    MarkdownElement.Scroll(
+                        element,
+                        last?.bounds?.second ?: 0
+                    )
+                )
                 else -> {
-                    if (last is MarkdownElement.Text) last.elements.add(el)
-                    else acc.add(MarkdownElement.Text(mutableListOf(el), last?.bounds?.second ?: 0))
+                    if (last is MarkdownElement.Text) last.elements.add(element)
+                    else acc.add(
+                        MarkdownElement.Text(
+                            mutableListOf(element),
+                            last?.bounds?.second ?: 0
+                        )
+                    )
                 }
             }
             acc
         }
-    }
-
-    /**
-     * clear markdown text to string without markdown characters
-     */
-    fun clear(string: String?): String? {
-        string ?: return null
-        var clearedString = ""
-        for(elm in findElements(
-            string
-        ))
-            clearedString += getSimple(
-                elm
-            )
-        return clearedString // Строка без markdown символов (для поиска по тексту)
-    }
-
-    private fun getSimple(element: Element): String {
-        var bufferString = ""
-        for(e in element.elements)
-            bufferString += getSimple(
-                e
-            )
-        return if (element.elements.isEmpty()) element.text.toString() else bufferString
     }
 
     /**
@@ -79,35 +69,45 @@ object MarkdownParser {
         val matcher = elementsPattern.matcher(string)
         var lastStartIndex = 0
 
-        loop@while(matcher.find(lastStartIndex)) {
+        loop@ while (matcher.find(lastStartIndex)) {
             val startIndex = matcher.start()
             val endIndex = matcher.end()
 
-            // Если нашелся markdown маркер - то до него просто текст
-            if(lastStartIndex < startIndex) {
+            //if something is found then everything before - TEXT
+            if (lastStartIndex < startIndex) {
                 parents.add(
                     Element.Text(
-                        string.subSequence(lastStartIndex, startIndex)
+                        string.subSequence(
+                            lastStartIndex,
+                            startIndex
+                        )
                     )
                 )
             }
 
+            //found text
             var text: CharSequence
-            val groups = 1..12 // Смотрим под какие типы markdown-а подходит
+
+            //groups range for iterate by groups
+            val groups = 1..12
             var group = -1
-            for(gr in groups) {
+            for (gr in groups) {
                 if (matcher.group(gr) != null) {
                     group = gr
                     break
                 }
             }
-            when(group) {
-                -1 -> break@loop // not found, break
-                1 -> { // unordered list
-                    // Смещаемся на 2 символа, так как ненумерованный список начинается +-* и пробела
+
+            when (group) {
+                //NOT FOUND -> BREAK
+                -1 -> break@loop
+
+                //UNORDERED LIST
+                1 -> {
+                    //text without "*. "
                     text = string.subSequence(startIndex.plus(2), endIndex)
 
-                    // Вложенные элементы (между первым и последним вхождением
+                    //find inner elements
                     val subs =
                         findElements(
                             text
@@ -119,109 +119,117 @@ object MarkdownParser {
                         )
                     parents.add(element)
 
-                    // next find start from position "endIndex" (last regex character)
+                    //next find start from position "endIndex" (last regex character)
                     lastStartIndex = endIndex
                 }
-                2 -> { // header
+
+                //HEADER
+                2 -> {
                     val reg = "^#{1,6}".toRegex().find(string.subSequence(startIndex, endIndex))
-                    val level = reg!!.value.length // уровень заголовка = кол-ву #
-                    text = string.subSequence(startIndex.plus(level.inc()),endIndex) // Текст после ###
+                    val level = reg!!.value.length
+
+                    //text without "{#} "
+                    text = string.subSequence(startIndex.plus(level.inc()), endIndex)
+
                     val element =
-                        Element.Header(
-                            level,
-                            text
-                        )
+                        Element.Header(level, text)
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
-                3 -> { // quotes (цитаты)
-                    text = string.subSequence(startIndex.plus(2),endIndex) // Текст после >
+
+                //QUOTE
+                3 -> {
+                    //text without "> "
+                    text = string.subSequence(startIndex.plus(2), endIndex)
                     val subelements =
                         findElements(
                             text
                         )
-
-                    val element =
-                        Element.Quote(
-                            text,
-                            subelements
-                        ) // Элемент из текста и подэлементы
+                    val element = Element.Quote(
+                        text,
+                        subelements
+                    )
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
-                4 -> { // italic
-                    text = string.subSequence(startIndex.inc(),endIndex.dec()) // Текст между _ или *
+
+                //ITALIC
+                4 -> {
+                    //text without "*{}*"
+                    text = string.subSequence(startIndex.inc(), endIndex.dec())
                     val subelements =
                         findElements(
                             text
                         )
-
-                    val element =
-                        Element.Italic(
-                            text,
-                            subelements
-                        ) // Элемент из текста и подэлементы
+                    val element = Element.Italic(
+                        text,
+                        subelements
+                    )
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
-                5 -> { // bold
-                    text = string.subSequence(startIndex.plus(2),endIndex.plus(-2)) // Текст между __ или **
+
+                //BOLD
+                5 -> {
+                    //text without "**{}**"
+                    text = string.subSequence(startIndex.plus(2), endIndex.plus(-2))
                     val subelements =
                         findElements(
                             text
                         )
-
-                    val element =
-                        Element.Bold(
-                            text,
-                            subelements
-                        ) // Элемент из текста и подэлементы
+                    val element = Element.Bold(
+                        text,
+                        subelements
+                    )
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
-                6 -> { // strike
-                    text = string.subSequence(startIndex.plus(2),endIndex.plus(-2)) // Текст между ~~
+
+                //STRIKE
+                6 -> {
+                    //text without "~~{}~~"
+                    text = string.subSequence(startIndex.plus(2), endIndex.plus(-2))
                     val subelements =
                         findElements(
                             text
                         )
+                    val element = Element.Strike(
+                        text,
+                        subelements
+                    )
+                    parents.add(element)
+                    lastStartIndex = endIndex
+                }
 
-                    val element =
-                        Element.Strike(
-                            text,
-                            subelements
-                        ) // Элемент из текста и подэлементы
+                //RULE
+                7 -> {
+                    //text without "***" insert empty character
+                    val element = Element.Rule()
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
-                7 -> { // rule
-                    val element =
-                        Element.Rule() // Элемент из текста и подэлементы
-                    parents.add(element)
-                    lastStartIndex = endIndex
-                }
-                8 -> { // inline code
-                    text = string.subSequence(startIndex.inc(),endIndex.dec()) // Текст между `
 
+                //RULE
+                8 -> {
+                    //text without "`{}`"
+                    text = string.subSequence(startIndex.inc(), endIndex.dec())
                     val element =
-                        Element.InlineCode(
-                            text
-                        )
+                        Element.InlineCode(text)
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
-                9 -> { // link
-                    text = string.subSequence(startIndex,endIndex) // Текст между [title](link)
-                    val (title:String, link: String) = "\\[(.*)]\\((.*)\\)".toRegex().find(text)!!.destructured
+
+                //LINK
+                9 -> {
+                    //full text for regex
+                    text = string.subSequence(startIndex, endIndex)
+                    val (title: String, link: String) = "\\[(.*)]\\((.*)\\)".toRegex().find(text)!!.destructured
                     val element =
-                        Element.Link(
-                            link,
-                            title
-                        )
+                        Element.Link(link, title)
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
-                //10 -> BLOCK CODE - optionally
+                //10 -> BLOCK CODE
                 10 -> {
                     text = string.subSequence(startIndex.plus(3), endIndex.plus(-3)).toString()
                     val element = Element.BlockCode(text)
@@ -233,57 +241,56 @@ object MarkdownParser {
                 11 -> {
                     val reg = "(^\\d{1,2}.)".toRegex().find(string.substring(startIndex, endIndex))
                     val order = reg!!.value
-                    text = string.subSequence(startIndex.plus(order.length.inc()), endIndex).toString()
-                    val subs = findElements( text)
-                    parents.add(
+                    text =
+                        string.subSequence(startIndex.plus(order.length.inc()), endIndex).toString()
+
+                    val subs = findElements(text)
+                    val element =
                         Element.OrderedListItem(
                             order,
                             text.toString(),
                             subs
                         )
-                    )
+                    parents.add(element)
                     lastStartIndex = endIndex
                 }
-                // IMAGE
+
+                //12 -> IMAGE GROUP
                 12 -> {
                     text = string.subSequence(startIndex, endIndex)
                     val (alt, url, title) = "^!\\[([^\\[\\]]*?)?]\\((.*?) \"(.*?)\"\\)$".toRegex()
                         .find(text)!!.destructured
 
-                    val element = Element.Image(url, alt, title)
+                    val element = Element.Image(url, if (alt.isBlank()) null else alt, title)
                     parents.add(element)
                     lastStartIndex = endIndex
                 }
             }
+
         }
 
-        if(lastStartIndex<string.length) { // проверка после последнего вхождения, если там что то есть - то простой текст
+        if (lastStartIndex < string.length) {
             val text = string.subSequence(lastStartIndex, string.length)
-            parents.add(
-                Element.Text(
-                    text
-                )
-            )
+            parents.add(Element.Text(text))
         }
+
         return parents
     }
 }
 
-// Обертка - список элементов
-data class MarkdownText(val elements: List<Element>)
-
 // Одна View состоящая из комб 3 разныз View: Текст из кучи span-ов + ImageViewGroup (состоит из ImageView, Title) +
 // горизонтальный scroll (для листинга длинных строк)
-sealed class MarkdownElement {
+sealed class MarkdownElement() {
     abstract val offset: Int // Смещение от начала View
     val bounds: Pair<Int, Int> by lazy { // Границы  View содержащие исходный текст (границы текста, фактически [offset... offset + размер текстовой части View]
         when(this){
             is Text -> {
-                val end = elements.fold(offset) { acc, el ->
+                val end = elements.fold(offset){ acc, el ->
                     acc + el.spread().map { it.text.length }.sum()
                 }
                 offset to end
             }
+
             is Image -> offset to image.text.length + offset
             is Scroll -> offset to blockCode.text.length + offset
         }
@@ -292,22 +299,22 @@ sealed class MarkdownElement {
     data class Text(
         val elements: MutableList<Element>,
         override val offset: Int = 0
-    ): MarkdownElement()
+    ) : MarkdownElement()
 
     data class Image(
         val image: Element.Image,
         override val offset: Int = 0
-    ): MarkdownElement()
+    ) : MarkdownElement()
 
     data class Scroll(
         val blockCode: Element.BlockCode,
         override val offset: Int = 0
-    ): MarkdownElement()
+    ) : MarkdownElement()
 }
 
 sealed class Element() { // Соответствует элементу markdown разметки
     abstract val text: CharSequence
-    abstract val elements: List<Element> // дочерние подэлементы
+    abstract val elements: List<Element>
 
     data class Text( // Элемент markdown - просто текст
         override val text: CharSequence,
@@ -351,17 +358,17 @@ sealed class Element() { // Соответствует элементу markdown
     ) : Element()
 
     data class InlineCode(
-        override val text: CharSequence, //for insert span
+        override val text: CharSequence,
         override val elements: List<Element> = emptyList()
     ) : Element()
 
     data class Link(
-        val link: String, // Собственно ссылка
-        override val text: CharSequence, //for insert span
+        val link: String,
+        override val text: CharSequence,
         override val elements: List<Element> = emptyList()
     ) : Element()
 
-    data class OrderedListItem( // нумерованный список
+    data class OrderedListItem(
         val order: String,
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
@@ -377,10 +384,11 @@ sealed class Element() { // Соответствует элементу markdown
         val alt: String?,
         override val text: CharSequence,
         override val elements: List<Element> = emptyList()
-    ): Element()
+    ) : Element()
+
 }
 
-private fun Element.spread() : List<Element>{ // Возврашает список элементов
+private fun Element.spread(): List<Element> { // Возврашает список элементов
     val elements = mutableListOf<Element>()
     if (this.elements.isNotEmpty()) elements.addAll(this.elements.spread())
     else elements.add(this)
@@ -393,15 +401,15 @@ private fun List<Element>.spread(): List<Element> {
     return elements
 }
 
-private fun Element.clearContent(): String { // Очистка от markdown символов
+private fun Element.clearContent(): String {
     return StringBuilder().apply {
         val element = this@clearContent
-        if(element.elements.isEmpty()) append(element.text)
+        if (element.elements.isEmpty()) append(element.text)
         else element.elements.forEach { append(it.clearContent()) }
     }.toString()
 }
 
-fun List<MarkdownElement>.clearContent(): String { // Возвращает строку, очищеннюу от markdown символов
+fun List<MarkdownElement>.clearContent(): String {
     return StringBuilder().apply {
         this@clearContent.forEach {
             when (it) {

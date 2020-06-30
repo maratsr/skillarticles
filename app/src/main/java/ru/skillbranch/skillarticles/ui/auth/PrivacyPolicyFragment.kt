@@ -1,11 +1,10 @@
 package ru.skillbranch.skillarticles.ui.auth
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
+import androidx.fragment.app.Fragment
 import ru.skillbranch.skillarticles.R
 
 /**
@@ -21,4 +20,4 @@ class PrivacyPolicyFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_privacy_policy, container, false)
     }
 
-} // Можно просто без перегрузки onCreateView указать другой конструктор class PrivacyPolicyFragment : Fragment(R.layout.fragment_privacy_policy) {}
+}

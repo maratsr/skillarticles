@@ -17,7 +17,6 @@ import ru.skillbranch.skillarticles.data.models.CommentItemData
 import ru.skillbranch.skillarticles.extensions.*
 import kotlin.math.min
 
-// Custom-ная view
 class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
     private val defaultVSpace = context.dpToIntPx(8)
     private val defaultHSpace = context.dpToIntPx(16)
@@ -35,13 +34,22 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
     private val grayColor = context.getColor(R.color.color_gray)
     private val primaryColor = context.attrValue(R.attr.colorPrimary)
     private val dividerColor = context.getColor(R.color.color_divider)
+    private val baseColor = context.getColor(R.color.color_gray_light)
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = dividerColor
         strokeWidth = lineSize
         style = Paint.Style.STROKE
     }
 
-    init { // Создаем поэлементно view и добавляем их к ViewGroup
+    private val shimmerDrawable by lazy(LazyThreadSafetyMode.NONE) {
+        ShimmerDrawable.fromView(this).apply {
+            setBaseColor(baseColor)
+            setHighlightColor(dividerColor)
+        }
+    }
+
+
+    init {
         setPadding(defaultHSpace, defaultVSpace, defaultHSpace, defaultVSpace)
         tv_date = TextView(context).apply {
             setTextColor(grayColor)
@@ -81,7 +89,6 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         addView(iv_answer_icon)
     }
 
-    // Вычисляем и высталяем размер custom view в зависимости от размера child-ов
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var usedHeight = paddingTop
         val width = View.getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
@@ -104,7 +111,6 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         setMeasuredDimension(width, usedHeight)
     }
 
-    // Формирование из child-ов собственно View
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         var usedHeight = paddingTop
         val left = paddingLeft
@@ -165,7 +171,6 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
 
     override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
-        // Линиями отображаем уровень вложенности комментария (макс = 5)
         val level = min(paddingLeft / defaultHSpace, 5)
         if (level == 1) return
         for (i in 1 until level) {
@@ -179,15 +184,19 @@ class CommentItemView(context: Context) : ViewGroup(context, null, 0) {
         }
     }
 
-    // Связь отображения с моделью
     fun bind(item: CommentItemData?) {
         if (item == null) {
-            //TODO show shimmer
-            tv_author.text = "Loading - need placeholder this"
+            foreground = shimmerDrawable
+            shimmerDrawable.start()
         } else {
-            // Уровень вложенности комментария
             val level = min(item.slug.split("/").size.dec(), 5)
             setPaddingOptionally(left = level * defaultHSpace)
+
+            if (foreground != null) {
+                shimmerDrawable.stop()
+                foreground = null
+            }
+
 
             Glide.with(context)
                 .load(item.user.avatar)

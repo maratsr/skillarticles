@@ -1,5 +1,4 @@
 package ru.skillbranch.skillarticles.extensions.data
-
 // extension - функции для биндинга данных
 import ru.skillbranch.skillarticles.data.models.AppSettings
 import ru.skillbranch.skillarticles.data.models.ArticlePersonalInfo

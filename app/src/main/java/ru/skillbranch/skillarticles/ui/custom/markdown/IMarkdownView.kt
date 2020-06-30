@@ -10,10 +10,14 @@ interface IMarkdownView {
     var fontSize: Float
     val spannableContent: Spannable
 
-    fun renderSearchResult(results: List<Pair<Int, Int>>, offset: Int) {
+    fun renderSearchResult(
+        results: List<Pair<Int, Int>>,
+        offset: Int
+    ) {
         clearSearchResult()
-        val offsetResult = results // Результат с учетом смещения
-            .map {(start, end) -> start.minus(offset) to end.minus(offset) }
+        val offsetResult = results
+            .map{(start, end) -> start.minus(offset) to end.minus(offset)}
+
         try {
             offsetResult.forEach { (start, end) ->
                 spannableContent.setSpan(
@@ -23,13 +27,17 @@ interface IMarkdownView {
                     SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
-        } catch(e: Exception){
+        } catch (e: Exception) {
 
         }
     }
 
-    fun renderSearchPosition(searchPosition: Pair<Int, Int>, offset: Int){
+    fun renderSearchPosition(
+        searchPosition: Pair<Int, Int>,
+        offset: Int
+    ){
         spannableContent.getSpans<SearchFocusSpan>().forEach { spannableContent.removeSpan(it) }
+
         spannableContent.setSpan(
             SearchFocusSpan(),
             searchPosition.first.minus(offset),

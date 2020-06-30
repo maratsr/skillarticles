@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.view.View
 import android.view.ViewAnimationUtils
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -13,36 +12,24 @@ import androidx.core.animation.doOnEnd
 import androidx.core.view.isVisible
 import com.google.android.material.shape.MaterialShapeDrawable
 import kotlinx.android.synthetic.main.layout_bottombar.view.*
-import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.ui.custom.behaviors.BottombarBehavior
 import kotlin.math.hypot
 
-// Custom-view + добавили кастомное поведение
 class Bottombar @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : ConstraintLayout(context, attrs, defStyleAttr), CoordinatorLayout.AttachedBehavior {
-
     var isSearchMode = false
-
-    init {
-        //Враг был тут ---> View.inflate(context, R.layout.layout_bottombar, this)
-        val materialBg = MaterialShapeDrawable.createWithElevationOverlay(context)
-        materialBg.elevation = elevation // передаем elevation нашей view
-        background = materialBg
-    }
 
     override fun getBehavior(): CoordinatorLayout.Behavior<Bottombar> {
         return BottombarBehavior()
     }
 
-    fun show() {
-        ObjectAnimator.ofFloat(this, "translationY", 0f).start()
-    }
-
-    fun hide() {
-        ObjectAnimator.ofFloat(this, "translationY", height.toFloat()).start()
+    init {
+        val materialBg = MaterialShapeDrawable.createWithElevationOverlay(context)
+        materialBg.elevation = elevation
+        background = materialBg
     }
 
     //save state
@@ -62,7 +49,6 @@ class Bottombar @JvmOverloads constructor(
         }
     }
 
-    // Проверка режима поиска и установка анимации
     fun setSearchState(search: Boolean) {
         if (isSearchMode == search || !isAttachedToWindow) return
         isSearchMode = search
@@ -98,13 +84,12 @@ class Bottombar @JvmOverloads constructor(
         va.start()
     }
 
-    // Количество найденных вхождений и текущая выделенная позиция
     fun bindSearchInfo(searchCount: Int = 0, position: Int = 0) {
         if (searchCount == 0) {
             tv_search_result.text = "Not found"
-            btn_result_up.isEnabled = false // Не показываем кнопки перемещения по позициям
+            btn_result_up.isEnabled = false
             btn_result_down.isEnabled = false
-        }else{ // Чтото нашли в поиске
+        }else{
             tv_search_result.text = "${position.inc()} of $searchCount"
             btn_result_up.isEnabled = true
             btn_result_down.isEnabled = true
@@ -117,7 +102,14 @@ class Bottombar @JvmOverloads constructor(
         }
     }
 
-    // Для сохранения состояния View
+    fun show(){
+        ObjectAnimator.ofFloat(this, "translationY", 0f).start()
+    }
+
+    fun hide(){
+        ObjectAnimator.ofFloat(this, "translationY", height.toFloat()).start()
+    }
+
     private class SavedState : BaseSavedState, Parcelable {
         var ssIsSearchMode: Boolean = false
 

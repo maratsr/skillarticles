@@ -2,12 +2,19 @@ package ru.skillbranch.skillarticles.viewmodels.base
 
 import androidx.lifecycle.SavedStateHandle
 
-//ViewModel сейчас могут сохранять свое состояние в SavedState
-interface IViewModelState { // Просто операции с bundle
-    fun save(outState: SavedStateHandle) {
+interface IViewModelState {
+    /**
+     * override this if need save state in bundle
+     */
+    fun save(outState: SavedStateHandle){
         //default empty implementation
     }
-    fun restore(savedState: SavedStateHandle) : IViewModelState {
+
+    /**
+     * override this if need restore state from bundle
+     */
+    fun restore(savedState: SavedStateHandle) : IViewModelState{
+        //default empty implementation
         return this
     }
 }

@@ -67,7 +67,7 @@
 
         <ImageView
             android:id="@+id/iv_poster"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
@@ -87,10 +87,11 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:padding="16dp"
+            android:minHeight="1950dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_poster" />
-<!--        Дополнительно добавили иконку в конце текста endIconXXX которая отображается и для пустого поля -->
+        <!-- Дополнительно добавили иконку в конце текста endIconXXX которая отображается и для пустого поля -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/wrap_comments"
             style="@style/Base.Widget.MaterialComponents.TextInputLayout"
@@ -117,20 +118,19 @@
                 android:inputType="text"
                 tools:text="comment text" />
         </com.google.android.material.textfield.TextInputLayout>
-<!--        android:nestedScrollingEnabled="false" - чтобы комменты были без скролла, все на экране-->
+        <!-- android:nestedScrollingEnabled="false" - чтобы комменты были без скролла, все на экране-->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_comments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/color_surface"
+            android:background="?attr/colorSurface"
             android:nestedScrollingEnabled="false"
             android:paddingBottom="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/wrap_comments"
+            app:layout_constraintTop_toBottomOf="@+id/wrap_comments"
             tools:listitem="@layout/item_comment" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

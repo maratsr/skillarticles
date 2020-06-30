@@ -1,16 +1,16 @@
 package ru.skillbranch.skillarticles.ui.articles
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_articles.*
-
+import kotlinx.android.synthetic.main.search_view_layout.view.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.ui.base.Binding
@@ -23,11 +23,12 @@ import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 
 class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
-    override val viewModel: ArticlesViewModel by viewModels()
-    override val layout = R.layout.fragment_articles
-    override val binding: ArticlesBinding by lazy {ArticlesBinding()}
+    override val viewModel: ArticlesViewModel by activityViewModels()
+    override val layout: Int = R.layout.fragment_articles
+    override val binding: ArticlesBinding by lazy { ArticlesBinding() }
+    private val args: ArticlesFragmentArgs by navArgs()
 
-    override val prepareToolbar: (ToolbarBuilder.() -> Unit) = { // Добавим опцию поиска
+    override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
         addMenuItem(
             MenuItemHolder(
                 "Search",
@@ -38,54 +39,37 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         )
     }
 
+    private val articlesAdapter = ArticlesAdapter { item, isToggleBookmark ->
 
-    private val articlesAdapter = ArticlesAdapter(
-        articleListener = { item ->
-            Log.d("ArticlesFragment", "click on article ${item.id}")
-            // данные для перемещения на фрагмент
-            val action = ArticlesFragmentDirections.actionNavArticlesToPageArticle(
+        if (isToggleBookmark) {
+            viewModel.handleToggleBookmark(item.id, item.isBookmark)
+        } else {
+            val action = ArticlesFragmentDirections.actionToPageArticle(
                 item.id,
                 item.author,
                 item.authorAvatar,
                 item.category,
                 item.categoryIcon,
-                item.date,
                 item.poster,
-                item.title
+                item.title,
+                item.date
             )
             viewModel.navigate(NavigationCommand.To(action.actionId, action.arguments))
-        },
-        bookmarkListener = { id, isChecked ->
-            Log.e("bookmarkListener (AA)","  id $id, isChecked $isChecked")
-            viewModel.handleToggleBookmark(id, isChecked)
         }
-    )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true) // У данного фрагмента есть сабменю
+        setHasOptionsMenu(true)
     }
 
-    override fun setupViews() {
-        with(rv_articles) {
-            layoutManager = LinearLayoutManager(context)
-            adapter = articlesAdapter
-            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
-        }
-        // Подписка на список
-        viewModel.observeList(viewLifecycleOwner) { data -> articlesAdapter.submitList(data)}
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) { // Логика обработки нажатий поиска
+    override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         val menuItem = menu.findItem(R.id.action_search)
-        val searchView = menuItem.actionView as SearchView // получим поиск-меню и повесим дальше обработчики
+        val searchView = menuItem.actionView as SearchView
         if (binding.isSearch) {
             menuItem.expandActionView()
             searchView.setQuery(binding.searchQuery, false)
-
-            if (binding.isFocusedSearch) searchView.requestFocus() // проверяем режим поиска
-            else searchView.clearFocus()
         }
 
         menuItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
@@ -95,12 +79,12 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem?): Boolean {
-                viewModel.handleSearchMode(false) // or true?
+                viewModel.handleSearchMode(false)
                 return true
             }
+
         })
 
-        // Отслеживание поискового запроса
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.handleSearch(query)
@@ -112,20 +96,31 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
                 return true
             }
         })
+    }
 
-        // Обработчик закрытия searchView
-        searchView.setOnCloseListener {
-            viewModel.handleSearchMode(false)
-            true
+    override fun onDestroyView() {
+        toolbar.search_view?.setOnQueryTextListener(null)
+        super.onDestroyView()
+    }
+
+
+    override fun setupViews() {
+        with(rv_articles) {
+            layoutManager = LinearLayoutManager(context)
+            adapter = articlesAdapter
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+        }
+
+        viewModel.observeList(viewLifecycleOwner, args.isBookmarks) {
+            articlesAdapter.submitList(it)
         }
     }
 
     inner class ArticlesBinding : Binding() {
-        var isFocusedSearch = false
         var searchQuery: String? = null
-        var isSearch = false
+        var isSearch: Boolean = false
         var isLoading: Boolean by RenderProp(true) {
-            // TODO: Show shimmer on rv_list
+            //TODO show shimmer on rv_list
         }
 
         override fun bind(data: IViewModelState) {
@@ -135,4 +130,5 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             isLoading = data.isLoading
         }
     }
+
 }

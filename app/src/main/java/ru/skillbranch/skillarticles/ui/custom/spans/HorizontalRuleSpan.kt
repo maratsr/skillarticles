@@ -12,7 +12,7 @@ class HorizontalRuleSpan(
     val ruleWidth: Float,
     @ColorInt
     val ruleColor: Int
-) : ReplacementSpan() { // НАследуется ль ReplacementSpan - для замещения части тектса
+) : ReplacementSpan() {
 
     override fun getSize(
         paint: Paint,
@@ -35,12 +35,13 @@ class HorizontalRuleSpan(
         bottom: Int,
         paint: Paint
     ) {
+
         paint.forLine {
             canvas.drawLine(
                 0f,
-                (top+bottom)/2f,
+                (top + bottom)/2f,
                 canvas.width.toFloat(),
-                (top+bottom)/2f,
+                (top + bottom)/2f,
                 paint
             )
         }
@@ -51,13 +52,15 @@ class HorizontalRuleSpan(
         val oldColor = color
         val oldStyle = style
         val oldWidth = strokeWidth
+
         color = ruleColor
-        style = Paint.Style.STROKE // просто линия
+        style = Paint.Style.STROKE
         strokeWidth = ruleWidth
+
         block()
-        // Восстановим старые настройки
-        strokeWidth = oldWidth
+
         color = oldColor
         style = oldStyle
+        strokeWidth = oldWidth
     }
 }

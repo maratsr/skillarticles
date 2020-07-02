@@ -15,10 +15,10 @@ data class Article(
     val author: Author,
     @ColumnInfo(name = "category_id")
     val categoryId: String,
-    val poster: String
-    //val date: Date,
-    //@ColumnInfo(name = "updated_at")
-    //val updatedAt: Date
+    val poster: String,
+    val date: Date,
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: Date
 )
 
 data class Author(
@@ -28,7 +28,7 @@ data class Author(
     val name: String
 )
 
-/*
+
 @DatabaseView(
     """
         SELECT id, date, author_name AS author, author_avatar, article.title AS title, description, poster, article.category_id AS category_id,
@@ -64,7 +64,7 @@ data class ArticleItem(
     @ColumnInfo(name = "is_bookmark")
     val isBookmark: Boolean = false
 )
-
+/*
 @DatabaseView(
     """
         SELECT id, article.title AS title, description, author_user_id, author_avatar, author_name, date, 

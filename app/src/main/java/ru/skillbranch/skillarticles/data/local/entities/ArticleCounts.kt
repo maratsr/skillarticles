@@ -6,12 +6,13 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import java.util.*
 
+// Числовые данные к статье (кол-во комментариев, like-ов...)
 @Entity(
     tableName = "article_counts",
     foreignKeys = [ForeignKey(
-        entity = Article::class,
-        parentColumns = ["id"],
-        childColumns = ["article_id"],
+        entity = Article::class, // Основаня ссылаемая сущность
+        parentColumns = ["id"], // Ссылается на внешнюю таблицу
+        childColumns = ["article_id"], // Ключевое поле
         onDelete = ForeignKey.CASCADE
     )]
 )

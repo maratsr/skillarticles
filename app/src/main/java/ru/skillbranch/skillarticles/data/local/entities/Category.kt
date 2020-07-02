@@ -22,7 +22,7 @@ data class CategoryData(
     val icon:String,
     val title:String,
     @ColumnInfo(name = "articles_count")
-    val articlesCount:Int = 0
+    val articlesCount:Int = 0 // Количество статей данной категории
 ):Parcelable{
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,

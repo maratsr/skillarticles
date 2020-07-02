@@ -1,0 +1,41 @@
+package ru.skillbranch.skillarticles.data.local.dao
+
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.Transaction
+import ru.skillbranch.skillarticles.data.local.entities.Article
+import ru.skillbranch.skillarticles.data.local.entities.ArticlePersonalInfo
+
+@Dao
+interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
+
+    @Transaction
+    fun upsert(list: List<ArticlePersonalInfo>) {
+        insert(list)
+            .mapIndexed{ index, recordResult -> if(recordResult == -1L) list[index] else null }
+            .filterNotNull()
+            .also{ if(it.isNotEmpty()) update(it)}
+    }
+
+    @Query("""
+        update article_personal_infos set is_like = not is_like, updated_At=CURRENT_TIMESTAMP
+        where article_id = :articleId
+    """)
+    fun toggleLike(articleId: String): Int
+
+    @Query("""
+        update article_personal_infos set is_bookmark = not is_bookmark, updated_At=CURRENT_TIMESTAMP
+        where article_id = :articleId
+    """)
+    fun toggleBookmark(articleId: String): Int
+
+    @Transaction
+    fun toggleLikeOrInsert(articleId: String) {
+        if(toggleLike(articleId)==0) insert(ArticlePersonalInfo(articleId = articleId, isLike = true))
+    }
+
+    @Transaction
+    fun toggleBookmarkOrInsert(articleId: String) {
+        if(toggleBookmark(articleId)==0) insert(ArticlePersonalInfo(articleId = articleId, isBookmark = true))
+    }
+}

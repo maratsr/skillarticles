@@ -6,8 +6,9 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import java.util.*
 
+// контент статьи
 @Entity(tableName = "article_contents",
-foreignKeys = [ForeignKey(
+foreignKeys = [ForeignKey( // Внешний ключ на Article, при удаление Article удалится соответствующий ArticleContent
     entity = Article::class,
     parentColumns = ["id"],
     childColumns = ["article_id"],

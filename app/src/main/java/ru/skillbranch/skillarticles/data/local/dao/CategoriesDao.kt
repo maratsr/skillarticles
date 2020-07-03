@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.data.local.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import ru.skillbranch.skillarticles.data.local.entities.Category
@@ -14,5 +15,5 @@ interface CategoriesDao: BaseDao<Category> {
         group by category.category_id
         order by articles_count desc
     """)
-    fun findAllCategoriesData(): List<CategoryData>
+    fun findAllCategoriesData(): LiveData<List<CategoryData>>
 }

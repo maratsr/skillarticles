@@ -1,11 +1,15 @@
 package ru.skillbranch.skillarticles.ui.articles
 
+import android.database.Cursor
+import android.database.MatrixCursor
 import android.os.Bundle
+import android.provider.BaseColumns
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
+import androidx.cursoradapter.widget.CursorAdapter
+import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,6 +31,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     override val layout: Int = R.layout.fragment_articles
     override val binding: ArticlesBinding by lazy { ArticlesBinding() }
     private val args: ArticlesFragmentArgs by navArgs()
+    private lateinit var suggestionsAdapter: SimpleCursorAdapter
 
     override val prepareToolbar: (ToolbarBuilder.() -> Unit) = {
         addMenuItem(
@@ -42,7 +47,7 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
     private val articlesAdapter = ArticlesAdapter { item, isToggleBookmark ->
 
         if (isToggleBookmark) {
-            viewModel.handleToggleBookmark(item.id, item.isBookmark)
+            viewModel.handleToggleBookmark(item.id)
         } else {
             val action = ArticlesFragmentDirections.actionToPageArticle(
                 item.id,
@@ -60,7 +65,32 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        suggestionsAdapter = SimpleCursorAdapter( // Забиндить на системное View=android.R.layout.simple_list_item_1 данные из SQL курсора
+            context,
+            android.R.layout.simple_list_item_1,
+            null, //курсор
+            arrayOf("tag"), // Значение полей курсора, связанных с View
+            intArrayOf(android.R.id.text1), // К какому идентификатору привязываем
+            CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER // регистрируем наблюдателя за контентом
+        )
+        suggestionsAdapter.setFilterQueryProvider { constraint -> populateAdapter(constraint) } // constraint - введенное слово
         setHasOptionsMenu(true)
+    }
+
+    private fun populateAdapter(constraint: CharSequence?): Cursor {
+        // _ID - ROWID, tag - 2 колоночный курсор
+        val cursor = MatrixCursor(arrayOf(BaseColumns._ID, "tag"))
+        constraint?: return cursor
+        val currentCursor = suggestionsAdapter.cursor
+        currentCursor.moveToFirst()
+
+        // Переберем данные по курсору + заполним его
+        for(i in 0 until currentCursor.count ) {
+            val tagValue = currentCursor.getString(1)
+            if (tagValue.contains(constraint, true)) cursor.addRow(arrayOf<Any>(i,tagValue))
+            currentCursor.moveToNext()
+        }
+        return cursor
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -71,6 +101,10 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
             menuItem.expandActionView()
             searchView.setQuery(binding.searchQuery, false)
         }
+
+        // Поиск по хеш-тегам
+        searchView.suggestionsAdapter
+
 
         menuItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem?): Boolean {
@@ -122,6 +156,9 @@ class ArticlesFragment : BaseFragment<ArticlesViewModel>() {
         var isLoading: Boolean by RenderProp(true) {
             //TODO show shimmer on rv_list
         }
+
+        var isHashtagSearch: Boolean by RenderProp(false)
+        var tags: List<String> by RenderProp(emptyList())
 
         override fun bind(data: IViewModelState) {
             data as ArticlesState

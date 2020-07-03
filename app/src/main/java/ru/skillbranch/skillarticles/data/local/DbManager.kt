@@ -25,7 +25,8 @@ object DbManager {
         Category::class,
         ArticlePersonalInfo::class,
         Tag::class,
-        ArticleTagXRef::class
+        ArticleTagXRef::class,
+        ArticleContent::class
     ],
     version = AppDb.DATABASE_VERSION,
     exportSchema = false,
@@ -45,4 +46,5 @@ abstract class AppDb: RoomDatabase() {
     abstract fun categoriesDao(): CategoriesDao
     abstract fun articalPersonalInfos(): ArticlePersonalInfosDao
     abstract fun tagsDao(): TagsDao
+    abstract fun articleContentsDao(): ArticleContentsDao
 }

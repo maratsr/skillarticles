@@ -15,7 +15,6 @@ import ru.skillbranch.skillarticles.data.repositories.CommentsDataFactory
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
 import ru.skillbranch.skillarticles.data.repositories.clearContent
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
-import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
 import ru.skillbranch.skillarticles.extensions.indexesOf
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
@@ -117,14 +116,20 @@ class ArticleViewModel(
 
     //personal article info
     override fun handleBookmark() {
+        val info = currentState.isBookmark
+
+        /*
         val info = currentState.toArticlePersonalInfo()
         repository.updateArticlePersonalInfo(info.copy(isBookmark = !info.isBookmark))
 
         val msg = if (currentState.isBookmark) "Add to bookmarks" else "Remove from bookmarks"
         notify(Notify.TextMessage(msg))
+
+         */
     }
 
     override fun handleLike() {
+        /*
         val isLiked = currentState.isLike
         val toggleLike = {
             val info = currentState.toArticlePersonalInfo()
@@ -143,6 +148,8 @@ class ArticleViewModel(
         }
 
         notify(msg)
+
+         */
     }
 
 

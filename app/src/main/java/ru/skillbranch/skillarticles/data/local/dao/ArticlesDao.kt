@@ -1,9 +1,8 @@
 package ru.skillbranch.skillarticles.data.local.dao
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.paging.DataSource
+import androidx.room.*
+import androidx.sqlite.db.SimpleSQLiteQuery
 import ru.skillbranch.skillarticles.data.local.entities.Article
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 
@@ -49,4 +48,8 @@ interface ArticlesDao: BaseDao<Article> {
         where refs.t_id =:tag
     """)
     fun findArticlesByTagId(tag: String): List<ArticleItem>
+
+    // указываем наблюдаемую сущность - если она обновляется то и RecyclerView автоматически подхватит
+    @RawQuery(observedEntities =[ArticleItem::class])
+    fun findArticlesByRaw(simpleSQLiteQuery: SimpleSQLiteQuery): DataSource.Factory<Int, ArticleItem>
 }

@@ -21,7 +21,7 @@ interface IArticlesRepository {
     fun findTags(): LiveData<List<String>>
     fun findCategoriesData(): LiveData<List<CategoryData>>
     fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem>
-    fun incrementTagUSeCount(tag: String)
+    fun incrementTagUseCount(tag: String)
 }
 
 object ArticlesRepository: IArticlesRepository{
@@ -73,7 +73,7 @@ object ArticlesRepository: IArticlesRepository{
         return articlesDao.findArticlesByRaw(SimpleSQLiteQuery(filter.toQuery()))
     }
 
-    override fun incrementTagUSeCount(tag: String) {
+    override fun incrementTagUseCount(tag: String) {
         tagsDao.incrementTagUseCount(tag)
     }
 }
@@ -148,7 +148,7 @@ class ArticleFilter(
         if (search != null && !isHashtag) qb.appendWhere("title LIKE '%$search%'")
         if (search != null && isHashtag) {
             qb.innerJoin("article_tag_x_ref as refs", "refs.a_id=id")
-            qb.appendWhere("refs.t_id ='$search%'")
+            qb.appendWhere("refs.t_id LIKE'$search%'")
         }
 
         if (isBookmark) qb.appendWhere("is_bookmark = 1")
@@ -156,7 +156,6 @@ class ArticleFilter(
 
         qb.orderBy("date")
         return qb.build()
-
     }
 }
 

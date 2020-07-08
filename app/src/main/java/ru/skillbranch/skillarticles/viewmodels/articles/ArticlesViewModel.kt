@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
+import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.data.repositories.ArticleFilter
 import ru.skillbranch.skillarticles.data.repositories.ArticlesRepository
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
@@ -40,6 +41,14 @@ class ArticlesViewModel(handle: SavedStateHandle) :
         listData.observe(owner, Observer { onChange(it) })
     }
 
+    fun observeTags(owner: LifecycleOwner, onChange: (list: List<String>) -> Unit) {
+        repository.findTags().observe(owner, Observer(onChange))
+    }
+
+    fun observeCategories(owner: LifecycleOwner, onChange: (list: List<CategoryData>) -> Unit) {
+        repository.findCategoriesData().observe(owner, Observer(onChange))
+    }
+
     private fun buildPagedList(
         dataFactory: DataSource.Factory<Int, ArticleItem>
     ): LiveData<PagedList<ArticleItem>> {
@@ -63,7 +72,8 @@ class ArticlesViewModel(handle: SavedStateHandle) :
             .build()
     }
 
-    private fun isEmptyFilter(): Boolean = currentState.searchQuery.isNullOrEmpty() &&
+    private fun isEmptyFilter(): Boolean =
+        currentState.searchQuery.isNullOrEmpty() &&
                 !currentState.isBookmark &&
                 currentState.selectedCategories.isEmpty() &&
                 !currentState.isHashtagSearch
@@ -121,6 +131,16 @@ class ArticlesViewModel(handle: SavedStateHandle) :
             repository.toggleBookmark(articleId)
         }
 //        listData.value?.dataSource?.invalidate()
+    }
+
+    fun handleSuggestion(tag: String) {
+        viewModelScope.launch(Dispatchers.IO){
+            repository.incrementTagUseCount(tag)
+        }
+    }
+
+    fun applyCategories(selectedCategories: List<String>) {
+        updateState { it.copy(selectedCategories = selectedCategories) }
     }
 }
 

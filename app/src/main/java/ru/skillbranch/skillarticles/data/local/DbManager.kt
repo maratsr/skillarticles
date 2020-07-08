@@ -30,7 +30,7 @@ object DbManager {
     ],
     version = AppDb.DATABASE_VERSION,
     exportSchema = false,
-    views = [ArticleItem::class]
+    views = [ArticleItem::class, ArticleFull::class]
 
 )
 

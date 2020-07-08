@@ -2,50 +2,82 @@ package ru.skillbranch.skillarticles.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
 import ru.skillbranch.skillarticles.data.NetworkDataHolder
+import ru.skillbranch.skillarticles.data.local.DbManager.db
 import ru.skillbranch.skillarticles.data.local.PrefManager
-import ru.skillbranch.skillarticles.data.local.entities.ArticlePersonalInfo
+import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
 import ru.skillbranch.skillarticles.data.models.*
+import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import java.lang.Thread.sleep
 import kotlin.math.abs
 
 // Singleton репозиторий - эмуляция получения данных
-object ArticleRepository {
+
+interface IArticleRepository {
+    fun findArticle(articleId: String): LiveData<ArticleFull>
+    fun getAppSettings(): LiveData<AppSettings>
+    fun toggleLike(articleId: String)
+    fun toggleBookmark(articleId: String)
+    fun isAuth(): MutableLiveData<Boolean>
+    fun loadCommentsByRange(slug: String?, size: Int, articleId: String): List<CommentItemData>
+    fun sendMessage(articleId: String, comment: String, answerToSlug: String?)
+    fun loadAllComments(articleId: String, totalCount: Int): CommentsDataFactory
+    fun decrementLike(articleId: String)
+    fun incrementLike(articleId: String)
+    fun updateSettings(copy: AppSettings)
+    fun fetchArticleContent(articleId: String)
+    fun findArticleCommentCount(articleId: String): LiveData<Int>
+}
+
+object ArticleRepository : IArticleRepository{
     private val network = NetworkDataHolder
     private val preferences = PrefManager
+    private val articlesDao = db.articlesDao()
+    private val articlePersonalDao = db.articalPersonalInfos()
+    private val articleCountsDao = db.articleCountsDao()
+    private val articleContentDao = db.articleContentsDao()
 
-    fun loadArticleContent(articleId: String): LiveData<List<MarkdownElement>?> {
-        return MutableLiveData(emptyList())
+    override fun findArticle(articleId: String): LiveData<ArticleFull> {
+        return articlesDao.findFullArticle(articleId)
     }
 
-    fun getArticle(articleId: String): LiveData<ArticleData?> {
-        return  MutableLiveData(null)
+    override fun getAppSettings(): LiveData<AppSettings> = preferences.getAppSettings() //from preferences
+
+    override fun toggleLike(articleId: String) {
+        articlePersonalDao.toggleLikeOrInsert(articleId)
     }
 
-    fun loadArticlePersonalInfo(articleId: String): LiveData<ArticlePersonalInfo?> {
-        return MutableLiveData(null)
+    override fun toggleBookmark(articleId: String) {
+        articlePersonalDao.toggleBookmarkOrInsert(articleId)
     }
 
-    fun getAppSettings(): LiveData<AppSettings> = preferences.getAppSettings() //from preferences
-    fun updateSettings(appSettings: AppSettings) {
+    override fun fetchArticleContent(articleId: String) {
+        val content = network.loadArticleContent(articleId).apply { sleep(1500)}
+        articleContentDao.insert(content.toArticleContent())
     }
 
-    fun updateArticlePersonalInfo(info: ArticlePersonalInfo) {
+    override fun findArticleCommentCount(articleId: String): LiveData<Int> {
+        return articleCountsDao.getCommentsCount(articleId)
     }
 
-    fun isAuth(): MutableLiveData<Boolean> = preferences.isAuth()
 
-    fun allComments(articleId: String, totalCount: Int) =
-        CommentsDataFactory(
-            itemProvider = ::loadCommentsByRange,
-            articleId = articleId,
-            totalCount = totalCount
-        )
+    override fun updateSettings(appSettings: AppSettings) { // call prefManager
+    }
 
-    private fun loadCommentsByRange(
+
+    override fun decrementLike(articleId: String) {
+        articleCountsDao.decrementLike(articleId)
+    }
+
+    override fun incrementLike(articleId: String) {
+        articleCountsDao.incrementLike(articleId)
+    }
+
+    override fun isAuth(): MutableLiveData<Boolean> = preferences.isAuth()
+
+    override fun loadCommentsByRange(
         slug: String?,
         size: Int,
         articleId: String
@@ -67,13 +99,21 @@ object ArticleRepository {
         }.apply { sleep(1500) }
     }
 
-    fun sendComment(articleId: String, comment: String, answerToSlug: String?) {
+    override fun sendMessage(articleId: String, comment: String, answerToSlug: String?) {
         network.sendMessage(
             articleId, comment, answerToSlug,
             User("777", "John Doe", "https://skill-branch.ru/img/mail/bot/android-category.png")
         )
         //preferences.incrementCommentsCount(articleId)
+        articleCountsDao.incrementCommentsCount(articleId)
     }
+
+    override fun loadAllComments(articleId: String, totalCount: Int)=
+        CommentsDataFactory(
+            itemProvider = ::loadCommentsByRange,
+            articleId = articleId,
+            totalCount = totalCount
+        )
 }
 
 // Комментарии к статье
@@ -84,7 +124,6 @@ class CommentsDataFactory(
 ) : DataSource.Factory<String?, CommentItemData>() {
     override fun create(): DataSource<String?, CommentItemData> =
         CommentsDataSource(itemProvider, articleId, totalCount)
-
 }
 
 class CommentsDataSource(

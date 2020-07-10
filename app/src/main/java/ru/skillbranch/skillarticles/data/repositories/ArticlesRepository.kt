@@ -1,10 +1,12 @@
 package ru.skillbranch.skillarticles.data.repositories
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.sqlite.db.SimpleSQLiteQuery
 import ru.skillbranch.skillarticles.data.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.local.DbManager.db
+import ru.skillbranch.skillarticles.data.local.dao.*
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.ArticleTagXRef
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
@@ -12,7 +14,6 @@ import ru.skillbranch.skillarticles.data.local.entities.Tag
 import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
-import java.lang.Thread.sleep
 
 interface IArticlesRepository {
     fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleRes>
@@ -26,11 +27,36 @@ interface IArticlesRepository {
 
 object ArticlesRepository: IArticlesRepository{
     private val network = NetworkDataHolder
-    private val articlesDao = db.articlesDao()
-    private val articleCountsDao = db.articleCountsDao()
-    private val categoriesDao = db.categoriesDao()
-    private val tagsDao = db.tagsDao()
-    private val articlePersonalInfosDao = db.articalPersonalInfos()
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    var articlesDao = db.articlesDao()
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    var articleCountsDao = db.articleCountsDao()
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    var categoriesDao = db.categoriesDao()
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    var tagsDao = db.tagsDao()
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    var articlePersonalInfosDao = db.articlePersonalInfosDao()
+
+    fun setupTestDao(
+        articlesDao: ArticlesDao,
+        articleCountsDao: ArticleCountsDao,
+        categoriesDao: CategoriesDao,
+        tagsDao: TagsDao,
+        articlePersonalDao: ArticlePersonalInfosDao
+    ) {
+        this.articlesDao = articlesDao // Замена val свойств на var в ArticlesRepository и убрал private
+        this.articleCountsDao = articleCountsDao
+        this.categoriesDao = categoriesDao
+        this.tagsDao = tagsDao
+        this.articlePersonalInfosDao = articlePersonalDao
+    }
+
 
     override fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleRes> {
         return network.findArticlesItem(start, size)

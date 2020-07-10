@@ -22,19 +22,17 @@ interface ArticlesDao: BaseDao<Article> {
     @Query("""
         select * from articles
     """)
-    fun findArticles(): List<Article>
+    fun findArticles(): LiveData<List<Article>>
 
     @Query("""
         select * from articles where id=:id
     """)
-    fun findArticleById(id: String): Article
+    fun findArticleById(id: String): LiveData<Article>
 
     @Query("""
         select * from ArticleItem
     """)
-    fun findArticleItems():List<ArticleItem> {
-        TODO("not implemented")
-    }
+    fun findArticleItems():LiveData<List<ArticleItem>>
 
     @Delete
     fun delete(article: Article)
@@ -42,14 +40,14 @@ interface ArticlesDao: BaseDao<Article> {
     @Query("""
         select * from ArticleItem where category_id in (:categoryIds)
     """)
-    fun findArticleItemsByCategoryIds(categoryIds: List<String>): List<ArticleItem>
+    fun findArticleItemsByCategoryIds(categoryIds: List<String>): LiveData<List<ArticleItem>>
 
     @Query("""
         select * from ArticleItem
         inner join article_tag_x_ref as refs on refs.a_id = id
         where refs.t_id =:tag
     """)
-    fun findArticlesByTagId(tag: String): List<ArticleItem>
+    fun findArticlesByTagId(tag: String): LiveData<List<ArticleItem>>
 
     // указываем наблюдаемую сущность - если она обновляется то и RecyclerView автоматически подхватит
     @RawQuery(observedEntities =[ArticleItem::class])

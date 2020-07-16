@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.viewmodels.article
 
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
@@ -37,6 +38,9 @@ class ArticleViewModel(
             .build()
     }
 
+//    var articleSource = state.value?.source
+//    var articleTags = state.value?.tags
+
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val listData: LiveData<PagedList<CommentItemData>> =
         Transformations.switchMap(repository.findArticleCommentCount(articleId)) {
@@ -58,8 +62,9 @@ class ArticleViewModel(
                 isBookmark = article.isBookmark,
                 isLike = article.isLike,
                 content = article.content ?: emptyList(),
-                isLoadingContent = article.content == null
-
+                isLoadingContent = article.content == null,
+                source = article.source,
+                tags = article.tags
             )
         }
 
@@ -253,8 +258,9 @@ data class ArticleState(
     val answerTo: String? = null,
     val answerToSlug: String? = null,
     val showBottomBar: Boolean = true,
-    val commentText: String? = null
-
+    val commentText: String? = null,
+    val source: String? = null,
+    val tags: List<String> = emptyList()
 ) : IViewModelState {
     override fun save(outState: SavedStateHandle) {
 

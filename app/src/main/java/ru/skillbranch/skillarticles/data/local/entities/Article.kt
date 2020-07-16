@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.data.local.entities
 
 import androidx.room.*
+import ru.skillbranch.skillarticles.data.local.ListConverter
 import ru.skillbranch.skillarticles.data.local.MarkdownConverter
 //import ru.skillbranch.skillarticles.data.local.MarkdownConverter
 import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
@@ -71,14 +72,16 @@ data class ArticleItem(
         SELECT id, article.title AS title, description, author_user_id, author_avatar, author_name, date, 
         category.category_id AS category_category_id, category.title AS category_title, category.icon AS category_icon,
         content.share_link AS share_link, content.content AS content,
-        personal.is_bookmark AS is_bookmark, personal.is_like AS is_like
+        personal.is_bookmark AS is_bookmark, personal.is_like AS is_like, content.source as source, group_concat(tag_refs.t_id, "&") as tags
         FROM articles AS article
         INNER JOIN article_categories AS category ON category.category_id = article.category_id
         LEFT JOIN article_contents AS content ON content.article_id = id
         LEFT JOIN article_personal_infos AS personal ON personal.article_id = id
+        LEFT JOIN article_tag_x_ref AS tag_refs ON article.id = tag_refs.a_id 
+        group by article.id
     """
 )
-@TypeConverters(MarkdownConverter::class)
+@TypeConverters(MarkdownConverter::class, ListConverter::class)
 data class ArticleFull(
     val id: String,
     val title: String,
@@ -94,42 +97,42 @@ data class ArticleFull(
     @ColumnInfo(name = "is_like")
     val isLike: Boolean = false,
     val date: Date,
-    val content: List<MarkdownElement>? = null
-//    val source: String? = null, //TODO implement me (через join)
-//    val tags: List<String>
+    val content: List<MarkdownElement>? = null,
+    val source: String? = null, //TODO implement me (через join)
+    val tags: List<String>
 )
 
-//data class ArticleWithContent(
-//    val id: String,
-//    val title: String,
-//    val description: String,
-//    @Relation(
-//        parentColumn = "id",
-//        entityColumn = "article_id"
-//    )
-//    val content: ArticleContent
-//)
-//
-//data class CategoryWithArticles(
-//    @Embedded
-//    val category: Category,
-//    @Relation(
-//        parentColumn = "category_id",
-//        entityColumn = "category_id"
-//    )
-//    val articles: List<Article>
-//)
-//
-//
-//data class ArticleWithShareLink(
-//    val id: String,
-//    val title: String,
-//    val description: String,
-//    @Relation(
-//        entity = ArticleContent::class,
-//        parentColumn = "id",
-//        entityColumn = "article_id",
-//        projection = ["share_link"]
-//    )
-//    val link: String
-//)
+data class ArticleWithContent(
+    val id: String,
+    val title: String,
+    val description: String,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "article_id"
+    )
+    val content: ArticleContent
+)
+
+data class CategoryWithArticles(
+    @Embedded
+    val category: Category,
+    @Relation(
+        parentColumn = "category_id",
+        entityColumn = "category_id"
+    )
+    val articles: List<Article>
+)
+
+
+data class ArticleWithShareLink(
+    val id: String,
+    val title: String,
+    val description: String,
+    @Relation(
+        entity = ArticleContent::class,
+        parentColumn = "id",
+        entityColumn = "article_id",
+        projection = ["share_link"]
+    )
+    val link: String
+)

@@ -69,15 +69,39 @@
             android:id="@+id/iv_poster"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:scaleType="centerCrop"
             app:layout_constraintDimensionRatio="w,9:16"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_author_avatar"
+            app:layout_constraintTop_toBottomOf="@id/tv_source"
             tools:src="@drawable/ic_launcher_background" />
+        <TextView
+            android:id="@+id/tv_hashtags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/iv_author_avatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/tv_source"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_hashtags"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:includeFontPadding="false"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"/>
 
         <ru.skillbranch.skillarticles.ui.custom.markdown.MarkdownContentView
             android:id="@+id/tv_text_content"
@@ -92,6 +116,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_poster" />
         <!-- Дополнительно добавили иконку в конце текста endIconXXX которая отображается и для пустого поля -->
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/wrap_comments"
             style="@style/Base.Widget.MaterialComponents.TextInputLayout"

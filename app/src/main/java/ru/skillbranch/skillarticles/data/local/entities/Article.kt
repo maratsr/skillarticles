@@ -99,7 +99,7 @@ data class ArticleFull(
     val date: Date,
     val content: List<MarkdownElement>? = null,
     val source: String? = null, //TODO implement me (через join)
-    val tags: List<String>
+    val tags: List<String> = emptyList()
 )
 
 data class ArticleWithContent(

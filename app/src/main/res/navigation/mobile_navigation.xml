@@ -114,7 +114,7 @@
         android:id="@+id/dialog_chose_category"
         android:name="ru.skillbranch.skillarticles.ui.dialogs.ChoseCategoryDialog"
         android:label="fragment_chose_category_dialog"
-        tools:layout="@layout/fragment_chose_category_dialog" >
+        tools:layout="@layout/fragment_categories_dialog" >
         <argument
             android:name="selected_categories"
             app:argType="string[]" />

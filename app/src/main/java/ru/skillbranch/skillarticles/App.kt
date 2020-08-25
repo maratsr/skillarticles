@@ -12,7 +12,7 @@ class App : Application() { // В манифесте указываем его �
         private var instance : App? = null
 
         fun applicationContext(): Context {
-            return instance!!.applicationContext
+            return instance!!.applicationContext //
         }
     }
 

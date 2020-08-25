@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
-import ru.skillbranch.skillarticles.data.NetworkDataHolder
 import ru.skillbranch.skillarticles.data.local.DbManager.db
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.local.dao.ArticleContentsDao
@@ -14,6 +13,7 @@ import ru.skillbranch.skillarticles.data.local.dao.ArticlePersonalInfosDao
 import ru.skillbranch.skillarticles.data.local.dao.ArticlesDao
 import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
 import ru.skillbranch.skillarticles.data.models.*
+import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import java.lang.Thread.sleep
 import kotlin.math.abs
@@ -37,7 +37,7 @@ interface IArticleRepository {
 }
 
 object ArticleRepository : IArticleRepository{
-    private val network = NetworkDataHolder
+    private val network = NetworkManager.api
     private val preferences = PrefManager
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
@@ -69,7 +69,7 @@ object ArticleRepository : IArticleRepository{
         return articlesDao.findFullArticle(articleId)
     }
 
-    override fun getAppSettings(): LiveData<AppSettings> = preferences.getAppSettings() //from preferences
+    override fun getAppSettings(): LiveData<AppSettings> = preferences.appSettings //from preferences
 
     override fun toggleLike(articleId: String) {
         articlePersonalDao.toggleLikeOrInsert(articleId)

@@ -9,7 +9,7 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleCounts
 @Dao
 interface ArticleCountsDao: BaseDao<ArticleCounts> {
     @Transaction
-    fun upsert(list: List<ArticleCounts>) {
+    suspend fun upsert(list: List<ArticleCounts>) {
         insert(list)
             .mapIndexed{ index, recordResult -> if(recordResult == -1L) list[index] else null }
             .filterNotNull()
@@ -34,24 +34,27 @@ interface ArticleCountsDao: BaseDao<ArticleCounts> {
         where article_id = :articleId
         """
     )
-    fun incrementLike(articleId: String) : Int
+    suspend fun incrementLike(articleId: String) : Int
 
     @Query("""
         update article_counts set likes=max(0,likes-1), updated_at = CURRENT_TIMESTAMP
         where article_id = :articleId
         """
     )
-    fun decrementLike(articleId: String) : Int
+    suspend fun decrementLike(articleId: String) : Int
 
     @Query("""
         update article_counts set comments=comments+1, updated_at = CURRENT_TIMESTAMP
         where article_id = :articleId
         """
     )
-    fun incrementCommentsCount(articleId: String)
+    suspend fun incrementCommentsCount(articleId: String)
 
     @Query("""
         select comments from article_counts where article_id = :articleId
     """)
     fun getCommentsCount(articleId: String) : LiveData<Int>
+
+    @Query("SELECT * FROM article_contents") // для тестирования
+    suspend fun findArticlesContentsTest(): List<ArticleCounts>
 }

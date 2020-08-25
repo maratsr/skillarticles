@@ -6,6 +6,10 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.*
 import androidx.navigation.NavOptions
 import androidx.navigation.Navigator
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 
 abstract class BaseViewModel<T : IViewModelState>(
     private val handleState: SavedStateHandle,
@@ -15,6 +19,8 @@ abstract class BaseViewModel<T : IViewModelState>(
     val notifications = MutableLiveData<Event<Notify>>()
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val navigation = MutableLiveData<Event<NavigationCommand>>()
+
+    val loading = MutableLiveData<Loading>(Loading.HIDE_LOADING) // для индикатора загрузку
 
     /***
      * Инициализация начального состояния аргументом конструктоа, и объявления состояния как
@@ -54,6 +60,20 @@ abstract class BaseViewModel<T : IViewModelState>(
         notifications.value = Event(content)
     }
 
+    /***
+     * отображение индикатора загрузки
+     */
+    protected fun showLoading(loadingType: Loading = Loading.SHOW_LOADING) {
+        loading.value = loadingType
+    }
+
+    /***
+     * скрытие индикатора загрузки
+     */
+    protected fun hideLoading() {
+        loading.value = Loading.HIDE_LOADING
+    }
+
     open fun navigate(command: NavigationCommand) {
         navigation.value = Event(command)
     }
@@ -66,6 +86,15 @@ abstract class BaseViewModel<T : IViewModelState>(
         state.observe(owner, Observer { onChanged(it!!) })
 
     }
+
+    /***
+     * более компактная форма записи observe() метода LiveData принимает последним аргумент лямбда
+     * выражение обрабатывающее изменение текущего состояния индикатора загрузки
+     */
+    fun observeLoading(owner: LifecycleOwner, onChanged: (newState: Loading) -> Unit) {
+        loading.observe(owner, Observer { onChanged(it!!) })
+    }
+
 
     /***
      * более компактная форма записи observe() метода LiveData вызывает лямбда выражение обработчик
@@ -107,6 +136,31 @@ abstract class BaseViewModel<T : IViewModelState>(
         state.value = currentState.restore(handleState) as T
     }
 
+    // Показать loader, выполнить переданный код, скрыть loader и обработать возникшие ошибки
+    protected fun launchSafety(
+        errorHandler: ((Throwable) -> Unit)? = null, // обработчик ошибок
+        compHandler: ((Throwable?) -> Unit)? = null, // вызываваемая в конце работы функция
+        block: suspend CoroutineScope.() -> Unit // suspend функция для работы стекущим CoroutineScope
+    ) {
+        // используем или переданный обработчик errorHandler или дефолтный
+        val errHand = CoroutineExceptionHandler { _, throwable ->
+            errorHandler?.invoke(throwable) ?: when (throwable) {
+                // Можно вставить доп обработку ошибок до else
+                else -> notify(
+                    Notify.ErrorMessage(throwable.message ?: "Something wrong")
+                )
+            }
+        }
+
+        // Добавляем обработчик ошибок в scope
+        (viewModelScope + errHand).launch {
+            showLoading() // показать индикатор загрузки
+            block()
+        }.invokeOnCompletion {
+            hideLoading() // скрыть индикатор загрузки по выполнию suspend переданной функции
+            compHandler?.invoke(it)
+        }
+    }
 }
 
 class Event<out E>(private val content: E) {
@@ -154,8 +208,8 @@ sealed class Notify() {
 
     data class ErrorMessage(
         override val message: String,
-        val errLabel: String?,
-        val errHandler: (() -> Unit)?
+        val errLabel: String? = null,
+        val errHandler: (() -> Unit)? = null
     ) : Notify()
 }
 
@@ -174,4 +228,8 @@ sealed class NavigationCommand() {
     data class FinishLogin(
         val privateDestination: Int? = null
     ) : NavigationCommand()
+}
+
+enum class Loading {
+    SHOW_LOADING, SHOW_BLOCKING_LOADING, HIDE_LOADING
 }

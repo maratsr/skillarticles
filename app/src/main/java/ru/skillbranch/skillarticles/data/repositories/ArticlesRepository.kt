@@ -11,22 +11,24 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.ArticleTagXRef
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.data.local.entities.Tag
+import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
+import ru.skillbranch.skillarticles.extensions.data.toCategory
 
 interface IArticlesRepository {
-    fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleRes>
-    fun insertArticlesToDb(articles: List<ArticleRes>)
-    fun toggleBookmark(articleId: String)
+    suspend fun loadArticlesFromNetwork(start: String? = null, size: Int = 10)
+    suspend fun insertArticlesToDb(articles: List<ArticleRes>)
+    suspend fun toggleBookmark(articleId: String)
     fun findTags(): LiveData<List<String>>
     fun findCategoriesData(): LiveData<List<CategoryData>>
     fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem>
-    fun incrementTagUseCount(tag: String)
+    suspend fun incrementTagUseCount(tag: String)
 }
 
 object ArticlesRepository: IArticlesRepository{
-    private val network = NetworkDataHolder
+    private val network = NetworkManager.api
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     var articlesDao = db.articlesDao()
@@ -58,11 +60,13 @@ object ArticlesRepository: IArticlesRepository{
     }
 
 
-    override fun loadArticlesFromNetwork(start: Int, size: Int): List<ArticleRes> {
-        return network.findArticlesItem(start, size)
+    override suspend fun loadArticlesFromNetwork(start: String?, size: Int) {
+        val items = network.articles(start, size)
+        if (items.isNotEmpty()) insertArticlesToDb(items)
+
     }
 
-    override fun insertArticlesToDb(articles: List<ArticleRes>) {
+    override suspend fun insertArticlesToDb(articles: List<ArticleRes>) {
         articlesDao.upsert(articles.map{ it.data.toArticle() })
         articleCountsDao.upsert(articles.map{ it.counts.toArticleCounts() })
 
@@ -75,7 +79,7 @@ object ArticlesRepository: IArticlesRepository{
             .distinct()
             .map{Tag(it)}
 
-        val categories = articles.map {it.data.category}
+        val categories = articles.map {it.data.category.toCategory()}
 
         categoriesDao.insert(categories)
         tagsDao.insert(tags)
@@ -83,7 +87,7 @@ object ArticlesRepository: IArticlesRepository{
 
     }
 
-    override fun toggleBookmark(articleId: String) {
+    override suspend fun toggleBookmark(articleId: String) {
         articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
     }
 
@@ -99,7 +103,7 @@ object ArticlesRepository: IArticlesRepository{
         return articlesDao.findArticlesByRaw(SimpleSQLiteQuery(filter.toQuery()))
     }
 
-    override fun incrementTagUseCount(tag: String) {
+    override suspend fun incrementTagUseCount(tag: String) {
         tagsDao.incrementTagUseCount(tag)
     }
 }

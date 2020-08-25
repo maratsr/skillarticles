@@ -19,6 +19,8 @@ import java.util.concurrent.Executors
 class ArticlesViewModel(handle: SavedStateHandle) :
     BaseViewModel<ArticlesState>(handle, ArticlesState()) {
     private val repository = ArticlesRepository
+    private var isLoadingInitial: Boolean = false
+    private var isLoadingAfter: Boolean = false
     private val listConfig by lazy {
         PagedList.Config.Builder()
             .setEnablePlaceholders(false)
@@ -79,41 +81,25 @@ class ArticlesViewModel(handle: SavedStateHandle) :
                 !currentState.isHashtagSearch
 
     private fun itemAtEndHandle(lastLoadArticle: ArticleItem) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val items = repository.loadArticlesFromNetwork(
-                start = lastLoadArticle.id.toInt().inc(),
+        if (isLoadingAfter) return // Если запрос был ранее отправлен
+        else isLoadingAfter = true
+
+        launchSafety (null,  {isLoadingAfter = false}) {// false выставим по факту завешения
+            val items = repository.loadArticlesFromNetwork( // UI поток не грузим
+                start = lastLoadArticle.id,
                 size = listConfig.pageSize
             )
-            if (items.isNotEmpty()) {
-                repository.insertArticlesToDb(items)
-                //invalidate data in data source -> create new LiveData<PagedList>
-                listData.value?.dataSource?.invalidate()
-            }
-
-            withContext(Dispatchers.Main) {
-                notify(
-                    Notify.TextMessage(
-                        "Load from network articles from ${items.firstOrNull()?.data?.id} " +
-                                "to ${items.lastOrNull()?.data?.id}"
-                    )
-                )
-            }
         }
     }
 
-    private fun zeroLoadingHandle() {
-        notify(Notify.TextMessage("Storage is empty"))
-        viewModelScope.launch(Dispatchers.IO) {
-            val items =
-                repository.loadArticlesFromNetwork(
-                    start = 0,
-                    size = listConfig.initialLoadSizeHint
-                )
-            if (items.isNotEmpty()) {
-                repository.insertArticlesToDb(items)
-                //invalidate data in data source -> create new LiveData<PagedList>
-                listData.value?.dataSource?.invalidate()
-            }
+    private fun zeroLoadingHandle() { // В БД нет записей
+        if (isLoadingInitial) return
+        else isLoadingInitial = true
+        launchSafety(null, {isLoadingInitial = false}) {
+            repository.loadArticlesFromNetwork(
+                start = null,
+                size = listConfig.initialLoadSizeHint
+            )
         }
     }
 

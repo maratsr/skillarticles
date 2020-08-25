@@ -26,7 +26,6 @@ class ChoseCategoryDialog : DialogFragment() {
     private val args : ChoseCategoryDialogArgs by  navArgs()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        //TODO save checked state and implement cusom items
         val categories = args.categories.toList()  // Собственно элементы
 
         selectedCategories.addAll(

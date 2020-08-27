@@ -9,6 +9,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import ru.skillbranch.skillarticles.AppConfig.BASE_URL
+import ru.skillbranch.skillarticles.data.remote.interceptors.NetworkStatusInterceptor
 import java.util.*
 
 object NetworkManager {
@@ -22,7 +23,7 @@ object NetworkManager {
         val client = OkHttpClient().newBuilder()
 //            .readTimeout(2, TimeUnit.SECONDS)    // socket timeout (GET)
 //            .writeTimeout(5, TimeUnit.SECONDS)   // socket timeout (POST, PUT, etc.)
-//            .addInterceptor(NetworkStatusInterceptor()) // intercept network status
+            .addInterceptor(NetworkStatusInterceptor()) // intercept network status
 //            .authenticator(TokenAuthenticator())
             .addInterceptor(logging)                    // log requests/results
 //            .addInterceptor(ErrorStatusInterceptor())   // intercept network errors

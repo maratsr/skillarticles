@@ -31,14 +31,39 @@ interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
     suspend fun toggleBookmark(articleId: String): Int
 
     @Transaction
-    suspend fun toggleLikeOrInsert(articleId: String) {
-        if(toggleLike(articleId)==0) insert(ArticlePersonalInfo(articleId = articleId, isLike = true))
+    suspend fun toggleLikeOrInsert(articleId: String): Boolean  {
+        if(toggleLike(articleId)==0) {
+            insert(ArticlePersonalInfo(articleId = articleId, isLike = true))
+            return true
+        }
+        return isLiked(articleId)
     }
 
     @Transaction
-    suspend fun toggleBookmarkOrInsert(articleId: String) {
+    suspend fun toggleBookmarkOrInsert(articleId: String): Boolean {
         if(toggleBookmark(articleId)==0) insert(ArticlePersonalInfo(articleId = articleId, isBookmark = true))
+        return isBookmarked(articleId)
     }
+
+    @Query(
+        """
+        SELECT is_bookmark
+        FROM article_personal_infos
+        WHERE article_id = :articleId        
+        LIMIT 1
+    """
+    )
+    suspend fun isBookmarked(articleId: String): Boolean
+
+    @Query(
+        """
+        SELECT is_like
+        FROM article_personal_infos
+        WHERE article_id = :articleId
+        LIMIT 1
+    """
+    )
+    fun isLiked(articleId: String): Boolean
 
     @Query("""
         select * from article_personal_infos

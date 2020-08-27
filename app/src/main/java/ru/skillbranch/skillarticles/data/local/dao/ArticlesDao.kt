@@ -60,4 +60,9 @@ interface ArticlesDao: BaseDao<Article> {
 
     @Query("SELECT * FROM articles") // для тестирования
     suspend fun findArticlesTest(): List<Article>
+
+    @Query("""
+        select id from Articles order by date desc limit 1
+    """)
+    fun findLastArticleId(): String?
 }

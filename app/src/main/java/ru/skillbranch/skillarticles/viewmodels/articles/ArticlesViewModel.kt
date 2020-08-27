@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 import ru.skillbranch.skillarticles.data.repositories.ArticleFilter
 import ru.skillbranch.skillarticles.data.repositories.ArticlesRepository
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
@@ -113,20 +114,46 @@ class ArticlesViewModel(handle: SavedStateHandle) :
     }
 
     fun handleToggleBookmark(articleId: String) {
-        viewModelScope.launch(Dispatchers.IO){
-            repository.toggleBookmark(articleId)
+            launchSafety(
+                {
+                    when (it) {
+                        is NoNetworkError -> notify(
+                            Notify.TextMessage("Network is not available, failed to fetch an article")
+                        )
+                        else -> notify(
+                            Notify.ErrorMessage(it.message ?: "Something wrong")
+                        )
+                    }
+                }
+            ) {
+                val isBookmarked = repository.toggleBookmark(articleId)
+                // Необходимо fetch-ить контент с обработкой ошибок
+                if (isBookmarked) repository.fetchArticleContent(articleId)
+                // else repository.removeArticleContent(articleId)
+            }
         }
-//        listData.value?.dataSource?.invalidate()
-    }
 
     fun handleSuggestion(tag: String) {
-        viewModelScope.launch(Dispatchers.IO){
+        launchSafety{
             repository.incrementTagUseCount(tag)
         }
     }
 
     fun applyCategories(selectedCategories: List<String>) {
         updateState { it.copy(selectedCategories = selectedCategories) }
+    }
+
+    fun refresh() {
+        launchSafety {
+            val lastArticleId: String? = repository.findLastArticleId()
+            val count = repository.loadArticlesFromNetwork(
+                start = lastArticleId,
+                size = if (lastArticleId == null) listConfig.initialLoadSizeHint else -listConfig.pageSize // минус - загрузить статьи после lastArticleId
+            )
+            withContext(Dispatchers.Main) {
+                notify(Notify.TextMessage("Load $count new articles"))
+            }
+        }
     }
 }
 

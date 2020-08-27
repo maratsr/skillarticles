@@ -55,6 +55,15 @@ interface ArticleCountsDao: BaseDao<ArticleCounts> {
     """)
     fun getCommentsCount(articleId: String) : LiveData<Int>
 
-    @Query("SELECT * FROM article_contents") // для тестирования
-    suspend fun findArticlesContentsTest(): List<ArticleCounts>
+    @Query(
+        """
+            UPDATE article_counts 
+            SET comments = :comments
+            WHERE article_id = :articleId
+        """
+    )
+    suspend fun updateCommentsCount(articleId: String, comments: Int)
+
+//    @Query("SELECT * FROM article_contents") // для тестирования
+//    suspend fun findArticlesContentsTest(): List<ArticleCounts>
 }

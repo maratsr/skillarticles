@@ -1,17 +1,5 @@
 package ru.skillbranch.skillarticles.data
 
-import ru.skillbranch.skillarticles.data.local.entities.Author
-import ru.skillbranch.skillarticles.data.local.entities.Category
-import ru.skillbranch.skillarticles.data.models.CommentItemData
-import ru.skillbranch.skillarticles.data.models.User
-import ru.skillbranch.skillarticles.data.remote.res.ArticleCountsRes
-import ru.skillbranch.skillarticles.data.remote.res.ArticleDataRes
-import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
-import ru.skillbranch.skillarticles.extensions.TimeUnits
-import ru.skillbranch.skillarticles.extensions.add
-import java.util.*
-import kotlin.random.Random.Default.nextBoolean
-
 //object EntityGenerator {
 //    fun generateArticleRes(count: Int): List<ArticleRes> =
 //        Array(count) { articleItems[it % 10] }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 
 abstract class BaseViewModel<T : IViewModelState>(
     private val handleState: SavedStateHandle,
@@ -146,6 +147,7 @@ abstract class BaseViewModel<T : IViewModelState>(
         val errHand = CoroutineExceptionHandler { _, throwable ->
             errorHandler?.invoke(throwable) ?: when (throwable) {
                 // Можно вставить доп обработку ошибок до else
+                is NoNetworkError -> notify(Notify.TextMessage("Network not available, check internet connection"))
                 else -> notify(
                     Notify.ErrorMessage(throwable.message ?: "Something wrong")
                 )

@@ -10,7 +10,9 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
+import java.net.SocketTimeoutException
 
 abstract class BaseViewModel<T : IViewModelState>(
     private val handleState: SavedStateHandle,
@@ -144,12 +146,28 @@ abstract class BaseViewModel<T : IViewModelState>(
         block: suspend CoroutineScope.() -> Unit // suspend функция для работы стекущим CoroutineScope
     ) {
         // используем или переданный обработчик errorHandler или дефолтный
-        val errHand = CoroutineExceptionHandler { _, throwable ->
-            errorHandler?.invoke(throwable) ?: when (throwable) {
+        val errHand = CoroutineExceptionHandler { _, err ->
+            errorHandler?.invoke(err) ?: when (err) {
                 // Можно вставить доп обработку ошибок до else
                 is NoNetworkError -> notify(Notify.TextMessage("Network not available, check internet connection"))
-                else -> notify(
-                    Notify.ErrorMessage(throwable.message ?: "Something wrong")
+
+                is SocketTimeoutException -> notify(
+                    Notify.ActionMessage(
+                        "Network timeout exception - please try again",
+                        "Retry"
+                    ) { launchSafety(errorHandler, compHandler, block) }
+                )
+
+                is ApiError.InternalServerError -> notify(
+                    Notify.ErrorMessage(
+                        err.message,
+                        "Retry"
+                    ) { launchSafety(errorHandler, compHandler, block) }
+                )
+
+                is ApiError -> notify(Notify.ErrorMessage(err.message))
+
+                else -> notify(Notify.ErrorMessage(err.message ?: "Something wrong")
                 )
             }
         }

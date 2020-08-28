@@ -9,13 +9,14 @@ object RootRepository {
     val preferences = PrefManager
     private val network = NetworkManager.api
 
-    fun isAuth() : LiveData<Boolean> = preferences.isAuth()
-    fun setAuth(auth:Boolean) = preferences.setAuth(auth)
+    fun isAuth() : LiveData<Boolean> = preferences.isAuthLive
+
     suspend fun login(login: String, pass: String) {
         // Получим токены
         val auth = network.login(LoginReq(login, pass))
 
-        auth.user?.let { preferences.profile = it }
+        //auth.user?.let { preferences.profile = it }
+        preferences.profile = auth.user
         preferences.accessToken = "Bearer ${auth.accessToken}"
         preferences.refreshToken = auth.refreshToken
 

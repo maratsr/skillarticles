@@ -2,6 +2,7 @@ package ru.skillbranch.skillarticles.data.remote.err
 
 import java.io.IOException
 
+//  Ошибкт сетевые
 sealed class ApiError(override val message:String): IOException(message) {
     class BadRequest(message: String?) : ApiError(message?: "Bad Request")
     class Unauthorized(message: String?) : ApiError(message ?:"Authorization token required")

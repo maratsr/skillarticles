@@ -113,7 +113,7 @@ object ArticleRepository : IArticleRepository{
         articleCountsDao.incrementLike(articleId)
     }
 
-    override fun isAuth(): MutableLiveData<Boolean> = preferences.isAuth()
+    override fun isAuth(): LiveData<Boolean> = preferences.isAuthLive
 
     override suspend fun sendMessage(articleId: String, comment: String, answerToMessageId: String?) {
        /* network.sendMessage(

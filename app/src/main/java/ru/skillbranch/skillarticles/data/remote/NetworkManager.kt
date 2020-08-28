@@ -9,8 +9,10 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import ru.skillbranch.skillarticles.AppConfig.BASE_URL
+import ru.skillbranch.skillarticles.data.remote.interceptors.ErrorStatusInterceptor
 import ru.skillbranch.skillarticles.data.remote.interceptors.NetworkStatusInterceptor
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 object NetworkManager {
     val api: RestService by lazy {
@@ -21,12 +23,12 @@ object NetworkManager {
 
         //client
         val client = OkHttpClient().newBuilder()
-//            .readTimeout(2, TimeUnit.SECONDS)    // socket timeout (GET)
-//            .writeTimeout(5, TimeUnit.SECONDS)   // socket timeout (POST, PUT, etc.)
+            .readTimeout(2, TimeUnit.SECONDS)    // socket timeout (GET)
+            .writeTimeout(5, TimeUnit.SECONDS)   // socket timeout (POST, PUT, etc.)
             .addInterceptor(NetworkStatusInterceptor()) // intercept network status
-//            .authenticator(TokenAuthenticator())
+//            .authenticator(TokenAuthenticator()) // попытаться получить новый access токен через refresh токен
             .addInterceptor(logging)                    // log requests/results
-//            .addInterceptor(ErrorStatusInterceptor())   // intercept network errors
+            .addInterceptor(ErrorStatusInterceptor())   // intercept network errors
             .build()
 
         //json converter

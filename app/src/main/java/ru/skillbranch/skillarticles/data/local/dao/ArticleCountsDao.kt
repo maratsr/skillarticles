@@ -64,6 +64,15 @@ interface ArticleCountsDao: BaseDao<ArticleCounts> {
     )
     suspend fun updateCommentsCount(articleId: String, comments: Int)
 
+    @Query(
+        """
+            UPDATE article_counts 
+            SET likes = :likeCount
+            WHERE article_id = :articleId
+        """
+    )
+    suspend fun updateLike(articleId: String, likeCount: Int)
+
 //    @Query("SELECT * FROM article_contents") // для тестирования
 //    suspend fun findArticlesContentsTest(): List<ArticleCounts>
 }

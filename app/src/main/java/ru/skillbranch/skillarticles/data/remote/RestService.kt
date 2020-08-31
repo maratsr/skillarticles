@@ -3,6 +3,7 @@ package ru.skillbranch.skillarticles.data.remote
 import retrofit2.Call
 import retrofit2.http.*
 import ru.skillbranch.skillarticles.data.remote.req.LoginReq
+import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.*
 
 interface RestService {
@@ -34,4 +35,26 @@ interface RestService {
     //https://skill-articles.skill-branch.ru/api/v1/auth/login
     @POST("auth/login")
     suspend fun login(@Body loginReq: LoginReq): AuthRes // Получаем refresh+access токены и пользователя
+
+    //https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/messages
+    @POST("articles/{article}/messages")
+    suspend fun sendMessage(
+        @Path("article") articleId: String,
+        @Body message: MessageReq,
+        @Header("Authorization") token: String
+    ): MessageRes
+
+    //https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/decrementLikes
+    @POST("articles/{article}/decrementLikes")
+    suspend fun decrementLike(
+        @Path("article") articleId: String,
+        @Header("Authorization") accessToken: String
+    ): LikeRes
+
+    //https://skill-articles.skill-branch.ru/api/v1/articles/{articleId}/incrementLikes
+    @POST("articles/{article}/incrementLikes")
+    suspend fun incrementLike(
+        @Path("article") articleId: String,
+        @Header("Authorization") accessToken: String
+    ): LikeRes
 }

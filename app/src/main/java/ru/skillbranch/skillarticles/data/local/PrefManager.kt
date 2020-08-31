@@ -13,17 +13,9 @@ import ru.skillbranch.skillarticles.data.models.AppSettings
 import ru.skillbranch.skillarticles.data.models.User
 
 object PrefManager {
-
     internal val preferences : SharedPreferences by lazy {
         PreferenceManager.getDefaultSharedPreferences(App.applicationContext())
     }
-
-
-//    var storedBoolean by PrefDelegate(false)
-//    var storedString by PrefDelegate("test")
-//    var storedInt by PrefDelegate(Int.MAX_VALUE)
-//    var storedLong by PrefDelegate(Long.MAX_VALUE)
-//    var storedFloat by PrefDelegate(100f)
 
     var isDarkMode by PrefDelegate(false)
     var isBigText by PrefDelegate(false)
@@ -68,10 +60,4 @@ object PrefManager {
     fun clearAll(){
         preferences.edit().clear().apply()
     }
-
-
-//    fun isAuth(): MutableLiveData<Boolean> {
-//        return isAuth()
-//    }
-
 }

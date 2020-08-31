@@ -12,6 +12,7 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
 import ru.skillbranch.skillarticles.data.models.*
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.RestService
+import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import java.lang.Thread.sleep
@@ -106,22 +107,43 @@ object ArticleRepository : IArticleRepository{
 
 
     override suspend fun decrementLike(articleId: String) {
-        articleCountsDao.decrementLike(articleId)
+        if(preferences.accessToken.isEmpty()) {
+            articleCountsDao.decrementLike(articleId)
+            return
+        }
+
+        try {
+            val res = network.decrementLike(articleId, preferences.accessToken)
+            articleCountsDao.updateLike(articleId, res.likeCount)
+        } catch (e: Throwable) {
+            articleCountsDao.decrementLike(articleId)
+            throw e
+        }
     }
 
     override suspend fun incrementLike(articleId: String) {
-        articleCountsDao.incrementLike(articleId)
+        if(preferences.accessToken.isEmpty()) {
+            articleCountsDao.incrementLike(articleId)
+            return
+        }
+
+        try {
+            val res = network.incrementLike(articleId, preferences.accessToken)
+            articleCountsDao.updateLike(articleId, res.likeCount)
+        } catch (e: Throwable) {
+            articleCountsDao.incrementLike(articleId)
+            throw e
+        }
     }
 
     override fun isAuth(): LiveData<Boolean> = preferences.isAuthLive
 
-    override suspend fun sendMessage(articleId: String, comment: String, answerToMessageId: String?) {
-       /* network.sendMessage(
-            articleId, comment, answerToSlug,
-            User("777", "John Doe", "https://skill-branch.ru/img/mail/bot/android-category.png")
+    override suspend fun sendMessage(articleId: String, message: String, answerToMessageId: String?) {
+        val (_, messageCount) = network.sendMessage(
+            articleId, MessageReq(message,  answerToMessageId), preferences.accessToken
         )
         //preferences.incrementCommentsCount(articleId)
-        articleCountsDao.incrementCommentsCount(articleId)*/
+        articleCountsDao.updateCommentsCount(articleId, messageCount)
     }
 
     override fun loadAllComments(articleId: String, totalCount: Int, errHandler: (Throwable) -> Unit)=

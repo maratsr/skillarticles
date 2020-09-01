@@ -1,9 +1,5 @@
 package ru.skillbranch.skillarticles.viewmodels.article
 
-import androidx.lifecycle.LiveData
-import ru.skillbranch.skillarticles.data.local.entities.ArticlePersonalInfo
-import ru.skillbranch.skillarticles.data.repositories.MarkdownElement
-
 interface IArticleViewModel {
      /**
      * Получение настроек приложения

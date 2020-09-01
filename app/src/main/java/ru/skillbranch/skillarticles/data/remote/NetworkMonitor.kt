@@ -15,11 +15,6 @@ object NetworkMonitor {
 
     private lateinit var cm: ConnectivityManager
 
-    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
-    fun setNetworkIsConnected(isConnected: Boolean = true) {
-        this.isConnected = isConnected
-    }
-
     fun registerNetworkMonitor(context: Context) {
         cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -57,8 +52,11 @@ object NetworkMonitor {
         networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
         else -> NetworkType.UNKNOWN
     }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    fun setNetworkIsConnected(isConnected: Boolean = true) {
+        this.isConnected = isConnected
+    }
 }
 
-enum class NetworkType {
-    NONE, UNKNOWN, WIFI, CELLULAR
-}
+enum class NetworkType { NONE, UNKNOWN, WIFI, CELLULAR}

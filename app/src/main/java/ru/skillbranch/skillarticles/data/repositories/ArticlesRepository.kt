@@ -25,6 +25,7 @@ interface IArticlesRepository {
     fun findCategoriesData(): LiveData<List<CategoryData>>
     fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem>
     suspend fun incrementTagUseCount(tag: String)
+    suspend fun removeArticleContent(articleId: String)
 }
 
 object ArticlesRepository: IArticlesRepository{
@@ -53,15 +54,16 @@ object ArticlesRepository: IArticlesRepository{
         articleCountsDao: ArticleCountsDao,
         categoriesDao: CategoriesDao,
         tagsDao: TagsDao,
-        articlePersonalDao: ArticlePersonalInfosDao
+        articlePersonalDao: ArticlePersonalInfosDao,
+        articlesContentDao: ArticleContentsDao
     ) {
         this.articlesDao = articlesDao // Замена val свойств на var в ArticlesRepository и убрал private
         this.articleCountsDao = articleCountsDao
         this.categoriesDao = categoriesDao
         this.tagsDao = tagsDao
         this.articlePersonalInfosDao = articlePersonalDao
+        this.articlesContentDao = articlesContentDao
     }
-
 
     override suspend fun loadArticlesFromNetwork(start: String?, size: Int): Int {
         val items = network.articles(start, size)
@@ -87,28 +89,20 @@ object ArticlesRepository: IArticlesRepository{
         categoriesDao.insert(categories)
         tagsDao.insert(tags)
         tagsDao.insertRefs(refs.map { ArticleTagXRef(it.first, it.second) })
-
     }
 
-    override suspend fun toggleBookmark(articleId: String): Boolean =
-        articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
+    override suspend fun toggleBookmark(articleId: String): Boolean = articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
 
+    override fun findTags(): LiveData<List<String>> = tagsDao.findTags()
 
-    override fun findTags(): LiveData<List<String>> {
-        return tagsDao.findTags()
-    }
+    override fun findCategoriesData(): LiveData<List<CategoryData>> =  categoriesDao.findAllCategoriesData()
 
-    override fun findCategoriesData(): LiveData<List<CategoryData>> {
-        return categoriesDao.findAllCategoriesData()
-    }
+    override fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem> =
+        articlesDao.findArticlesByRaw(SimpleSQLiteQuery(filter.toQuery()))
 
-    override fun rawQueryArticles(filter: ArticleFilter): DataSource.Factory<Int, ArticleItem> {
-        return articlesDao.findArticlesByRaw(SimpleSQLiteQuery(filter.toQuery()))
-    }
+    override suspend fun incrementTagUseCount(tag: String) = tagsDao.incrementTagUseCount(tag)
 
-    override suspend fun incrementTagUseCount(tag: String) {
-        tagsDao.incrementTagUseCount(tag)
-    }
+    override suspend fun removeArticleContent(articleId: String) = articlesContentDao.deleteById(articleId)
 
     suspend fun findLastArticleId(): String? = articlesDao.findLastArticleId()
 
@@ -117,63 +111,6 @@ object ArticlesRepository: IArticlesRepository{
         articlesContentDao.insert(content.toArticleContent())
     }
 }
-
-// Создание DataSource по соответствующей стратегии
-//class ArticlesDataFactory(val strategy: ArticleStrategy) :
-//    DataSource.Factory<Int, ArticleItem>() {
-//    override fun create(): DataSource<Int, ArticleItem> = ArticleDataSource(strategy)
-//}
-//
-
-//class ArticleDataSource(private val strategy: ArticleStrategy) :PositionalDataSource<ArticleItem>() {
-//    override fun loadInitial(
-//        params: LoadInitialParams,
-//        callback: LoadInitialCallback<ArticleItem>
-//    ) {
-//        val result = strategy.getItems(params.requestedStartPosition, params.requestedLoadSize)
-//        callback.onResult(result, params.requestedStartPosition) // Передаем результат в callback
-//    }
-//
-//    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<ArticleItem>) {
-//        val result = strategy.getItems(params.startPosition, params.loadSize)
-//        callback.onResult(result)
-//    }
-//}
-
-// Разные источники данных
-//sealed class ArticleStrategy() {
-//    abstract fun getItems(start: Int, size: Int): List<ArticleItem>
-//
-//    class AllArticles( // Загрузить все статьи
-//        private val itemProvider: (Int, Int) -> List<ArticleItem>
-//    ) : ArticleStrategy() {
-//        override fun getItems(start: Int, size: Int): List<ArticleItem> =
-//            itemProvider(start, size)
-//    }
-//
-//    class SearchArticle( // Загрузить статьи содержащие строку поиска
-//        private val itemProvider: (Int, Int, String) -> List<ArticleItem>,
-//        private val query: String
-//    ) : ArticleStrategy() {
-//        override fun getItems(start: Int, size: Int): List<ArticleItem> =
-//            itemProvider(start, size, query)
-//    }
-//
-//    class SearchBookmark(
-//        private val itemProvider: (Int, Int, String) -> List<ArticleItem>,
-//        private val query: String
-//    ) : ArticleStrategy() {
-//        override fun getItems(start: Int, size: Int): List<ArticleItem> =
-//            itemProvider(start, size, query)
-//    }
-//
-//    class BookmarkArticles(
-//        private val itemProvider: (Int, Int) -> List<ArticleItem>
-//    ) : ArticleStrategy() {
-//        override fun getItems(start: Int, size: Int): List<ArticleItem> =
-//            itemProvider(start, size)
-//    }
-//}
 
 class ArticleFilter(
     val search: String? = null,

@@ -9,6 +9,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.RequestOptions.circleCropTransform
 import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.fragment_profile.*
 import ru.skillbranch.skillarticles.R
@@ -28,51 +29,48 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
     override val layout: Int = R.layout.fragment_profile
     override val binding: Binding by lazy { ProfileBinding() }
 
-    var cornerRadius by Delegates.notNull<Int>()
+    //var cornerRadius by Delegates.notNull<Int>()
     lateinit var avatarShimmer: ShimmerDrawable
 
     override fun setupViews() {
-        val avatarSize = iv_avatar.maxWidth
-        cornerRadius = root.dpToIntPx(avatarSize / 2)
-
-        val baseColor = root.getColor(R.color.color_gray_light)
-        val highlightColor = requireContext().getColor(R.color.color_divider)
-
-        avatarShimmer = ShimmerDrawable.Builder()
-            .setBaseColor(baseColor)
-            .setHighlightColor(highlightColor)
-            .setShimmerWidth(avatarSize)
-            .addShape(ShimmerDrawable.Shape.Round(avatarSize))
-            .build()
-            .apply { start() }
     }
 
     private fun updateAvatar(avatarUrl: String) {
+        val avatarShimmer = ShimmerDrawable.Builder()
+            .setBaseColor(root.getColor(R.color.color_gray_light))
+            .setHighlightColor(requireContext().getColor(R.color.color_divider))
+            .setShimmerWidth(resources.displayMetrics.widthPixels - root.dpToIntPx(168))
+            .addShape(ShimmerDrawable.Shape.Round(root.dpToIntPx(168)))
+            .build()
+            .apply { start() }
+
         Glide.with(root)
-            .load(avatarUrl)
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    isFirstResource: Boolean
-                ): Boolean = false
+        .load(avatarUrl)
+        .listener(object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>?,
+                isFirstResource: Boolean
+            ): Boolean = false;
 
-                override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    avatarShimmer.stop()
-                    return false
-                }
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                avatarShimmer.stop()
+                return false
+            }
 
-            })
-            .placeholder(avatarShimmer)
-            .transform(CenterCrop(), RoundedCorners(cornerRadius))
-            .into(iv_avatar)
+        })
+        .placeholder(avatarShimmer)
+        .error(R.drawable.ic_avatar)
+        .apply(circleCropTransform())
+        .override(root.dpToIntPx(168))
+        .into(iv_avatar)
     }
 
     inner class ProfileBinding() : Binding() {
@@ -84,11 +82,11 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
 
         override fun bind(data: IViewModelState) {
             data as ProfileState
-            data.avatar?.let { avatar = it }
-            data.name?.let { name = it }
-            data.about?.let { about = it }
-            data.rating.let { rating = it }
-            data.respect.let { respect = it }
+            if (data.avatar != null){ avatar = data.avatar }
+            if (data.name != null){ name = data.name }
+            if (data.about != null){ about = data.about }
+            rating = data.rating
+            respect = data.respect
         }
     }
 }

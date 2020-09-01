@@ -11,6 +11,9 @@ interface ArticleContentsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(obj: ArticleContent): Long // Возвращает RowID или -1 если ошибка
 
-    @Query("SELECT * FROM article_contents") // для тестирования
+    @Query("select * from article_contents") // для тестирования
     suspend fun findArticlesContentsTest(): List<ArticleContent>
+
+    @Query("delete from article_contents where article_id = :articleId")
+    suspend fun deleteById(articleId: String)
 }

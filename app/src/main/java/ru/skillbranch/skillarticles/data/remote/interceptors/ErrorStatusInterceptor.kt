@@ -24,7 +24,7 @@ class ErrorStatusInterceptor : Interceptor {
         when (res.code) { // Кидаем ошибку в зависимости от response фронт-сервера
             400 -> throw ApiError.BadRequest(errMessage)
             401 -> {
-                Log.d("123456", " 401 Intercepted")
+                Log.d("Not Found", " 401 Intercepted")
                 throw ApiError.Unauthorized(errMessage)
             }
             403 -> throw ApiError.Forbidden(errMessage)

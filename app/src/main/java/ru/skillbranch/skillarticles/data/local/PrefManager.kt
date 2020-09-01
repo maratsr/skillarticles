@@ -25,7 +25,6 @@ object PrefManager {
     // moshi из JsonCoverter объекта
     var profile: User? by PrefObjDelegate(moshi.adapter(User::class.java)) // Делегат умеющий созранять nullable
 
-    //val isAuthLive: LiveData<Boolean> by PrefLiveDelegate("isAuth", false, preferences)
     val isAuthLive by lazy { // Если токен = null вернет isAuthLive=false, иначе = true
         val token by PrefLiveDelegate("accessToken", "", preferences)
         token.map { it.isNotEmpty() }
@@ -55,9 +54,5 @@ object PrefManager {
     fun setAppSettings(appSettings: AppSettings) {
         isDarkMode = appSettings.isDarkMode
         isBigText = appSettings.isBigText
-    }
-
-    fun clearAll(){
-        preferences.edit().clear().apply()
     }
 }

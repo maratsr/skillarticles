@@ -34,9 +34,6 @@ class ArticleViewModel(
             .build()
     }
 
-//    var articleSource = state.value?.source
-//    var articleTags = state.value?.tags
-
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     val listData: LiveData<PagedList<CommentRes>> =
         Transformations.switchMap(repository.findArticleCommentCount(articleId)) {
@@ -72,9 +69,7 @@ class ArticleViewModel(
             )
         }
 
-        subscribeOnDataSource(repository.isAuth()) { auth, state ->
-            state.copy(isAuth = auth)
-        }
+        subscribeOnDataSource(repository.isAuth()) { auth, state ->  state.copy(isAuth = auth) }
     }
 
     fun refresh() { // Обновление данных статьи
@@ -90,9 +85,7 @@ class ArticleViewModel(
     }
 
     private fun fetchContent() {
-        launchSafety {
-            repository.fetchArticleContent(articleId)
-        }
+        launchSafety { repository.fetchArticleContent(articleId) }
     }
 
     //app settings

@@ -18,16 +18,10 @@ interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
             .also{ if(it.isNotEmpty()) update(it)}
     }
 
-    @Query("""
-        update article_personal_infos set is_like = not is_like, updated_At=CURRENT_TIMESTAMP
-        where article_id = :articleId
-    """)
+    @Query("update article_personal_infos set is_like = not is_like, updated_At=CURRENT_TIMESTAMP where article_id = :articleId")
     suspend fun toggleLike(articleId: String): Int
 
-    @Query("""
-        update article_personal_infos set is_bookmark = not is_bookmark, updated_At=CURRENT_TIMESTAMP
-        where article_id = :articleId
-    """)
+    @Query("update article_personal_infos set is_bookmark = not is_bookmark, updated_At=CURRENT_TIMESTAMP where article_id = :articleId")
     suspend fun toggleBookmark(articleId: String): Int
 
     @Transaction
@@ -45,34 +39,16 @@ interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
         return isBookmarked(articleId)
     }
 
-    @Query(
-        """
-        SELECT is_bookmark
-        FROM article_personal_infos
-        WHERE article_id = :articleId        
-        LIMIT 1
-    """
-    )
+    @Query("SELECT is_bookmark FROM article_personal_infos WHERE article_id = :articleId LIMIT 1")
     suspend fun isBookmarked(articleId: String): Boolean
 
-    @Query(
-        """
-        SELECT is_like
-        FROM article_personal_infos
-        WHERE article_id = :articleId
-        LIMIT 1
-    """
-    )
+    @Query("SELECT is_like FROM article_personal_infos WHERE article_id = :articleId LIMIT 1")
     fun isLiked(articleId: String): Boolean
 
-    @Query("""
-        select * from article_personal_infos
-    """)
+    @Query("select * from article_personal_infos")
     fun findPersonalInfos(): LiveData<List<ArticlePersonalInfo>>
 
-    @Query("""
-        select * from article_personal_infos where article_id = :articleId 
-    """)
+    @Query("select * from article_personal_infos where article_id = :articleId")
     fun findPersonalInfos(articleId: String): LiveData<ArticlePersonalInfo>
 
     @Query("SELECT * FROM article_personal_infos WHERE article_id = :articleId") // Для тестирования

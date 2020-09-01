@@ -19,50 +19,34 @@ interface ArticlesDao: BaseDao<Article> {
             .also{ if(it.isNotEmpty()) update(it)}
     }
 
-    @Query("""
-        select * from articles
-    """)
+    @Query("select * from articles")
     fun findArticles(): LiveData<List<Article>>
 
-    @Query("""
-        select * from articles where id=:id
-    """)
+    @Query("select * from articles where id=:id")
     fun findArticleById(id: String): LiveData<Article>
 
-    @Query("""
-        select * from ArticleItem
-    """)
+    @Query("select * from ArticleItem")
     fun findArticleItems():LiveData<List<ArticleItem>>
 
 //    @Delete
 //    override suspend fun delete(article: Article)
 
-    @Query("""
-        select * from ArticleItem where category_id in (:categoryIds)
-    """)
+    @Query("select * from ArticleItem where category_id in (:categoryIds)")
     fun findArticleItemsByCategoryIds(categoryIds: List<String>): LiveData<List<ArticleItem>>
 
-    @Query("""
-        select * from ArticleItem
-        inner join article_tag_x_ref as refs on refs.a_id = id
-        where refs.t_id =:tag
-    """)
+    @Query("select * from ArticleItem  inner join article_tag_x_ref as refs on refs.a_id = id where refs.t_id =:tag")
     fun findArticlesByTagId(tag: String): LiveData<List<ArticleItem>>
 
     // указываем наблюдаемую сущность - если она обновляется то и RecyclerView автоматически подхватит
     @RawQuery(observedEntities =[ArticleItem::class])
     fun findArticlesByRaw(simpleSQLiteQuery: SimpleSQLiteQuery): DataSource.Factory<Int, ArticleItem>
 
-    @Query("""
-        select * from ArticleFull where id=:articleId
-    """)
+    @Query("select * from ArticleFull where id=:articleId")
     fun findFullArticle(articleId: String): LiveData<ArticleFull>
 
     @Query("SELECT * FROM articles") // для тестирования
     suspend fun findArticlesTest(): List<Article>
 
-    @Query("""
-        select id from Articles order by date desc limit 1
-    """)
+    @Query("select id from Articles order by date desc limit 1")
     fun findLastArticleId(): String?
 }

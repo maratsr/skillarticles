@@ -12,6 +12,7 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
 import ru.skillbranch.skillarticles.data.models.*
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.RestService
+import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
@@ -64,47 +65,24 @@ object ArticleRepository : IArticleRepository{
     }
 
 
-    override fun findArticle(articleId: String): LiveData<ArticleFull> {
-        return articlesDao.findFullArticle(articleId)
-    }
+    override fun findArticle(articleId: String): LiveData<ArticleFull> = articlesDao.findFullArticle(articleId)
 
-    override fun getAppSettings(): LiveData<AppSettings> = preferences.appSettings //from preferences
+    override fun getAppSettings(): LiveData<AppSettings> = preferences.appSettings
 
-    override suspend fun toggleLike(articleId: String): Boolean {
-        return articlePersonalDao.toggleLikeOrInsert(articleId)
-//        return if (articlePersonalDao.toggleLikeOrInsert(articleId)) {
-//            //incrementLike(articleId)
-//            true
-//        } else {
-//            //decrementLike(articleId)
-//            false
-//        }
-    }
-
-    override suspend fun toggleBookmark(articleId: String)  : Boolean{
-        //return articlePersonalDao.toggleBookmarkOrInsert(articleId)
-        return if (articlePersonalDao.isBookmarked(articleId)) {
-            //removeBookmark(articleId)
-            false
-        } else {
-            //addBookmark(articleId)
-            true
-        }
-    }
+    override suspend fun toggleLike(articleId: String): Boolean = articlePersonalDao.toggleLikeOrInsert(articleId)
+    // dec/inc remove/add делать в toogleLike/Bookmark...
+    override suspend fun toggleBookmark(articleId: String)  : Boolean = articlePersonalDao.isBookmarked(articleId)
 
     override suspend fun fetchArticleContent(articleId: String) {
-        val content = network.loadArticleContent(articleId).apply { sleep(1500)}
+        val content = network.loadArticleContent(articleId)
+            .apply { sleep(1500)}
         articleContentDao.insert(content.toArticleContent())
     }
 
-    override fun findArticleCommentCount(articleId: String): LiveData<Int> {
-        return articleCountsDao.getCommentsCount(articleId)
-    }
+    override fun findArticleCommentCount(articleId: String): LiveData<Int> = articleCountsDao.getCommentsCount(articleId)
 
-
-    override fun updateSettings(appSettings: AppSettings) { // call prefManager
-    }
-
+    // call prefManager
+    override fun updateSettings(appSettings: AppSettings) = preferences.setAppSettings(appSettings)
 
     override suspend fun decrementLike(articleId: String) {
         if(preferences.accessToken.isEmpty()) {
@@ -115,8 +93,9 @@ object ArticleRepository : IArticleRepository{
         try {
             val res = network.decrementLike(articleId, preferences.accessToken)
             articleCountsDao.updateLike(articleId, res.likeCount)
-        } catch (e: Throwable) {
+        } catch (e: NoNetworkError) {
             articleCountsDao.decrementLike(articleId)
+        } catch (e: Throwable) {
             throw e
         }
     }
@@ -130,8 +109,9 @@ object ArticleRepository : IArticleRepository{
         try {
             val res = network.incrementLike(articleId, preferences.accessToken)
             articleCountsDao.updateLike(articleId, res.likeCount)
-        } catch (e: Throwable) {
+        } catch (e: NoNetworkError) {
             articleCountsDao.incrementLike(articleId)
+        } catch (e: Throwable) {
             throw e
         }
     }
@@ -157,6 +137,16 @@ object ArticleRepository : IArticleRepository{
     suspend fun refreshCommentsCount(articleId: String) {
         val counts = network.loadArticleCounts(articleId)
         articleCountsDao.updateCommentsCount(articleId, counts.comments)
+    }
+
+    suspend fun addBookmark(articleId: String) {
+        //TODO
+        return
+    }
+
+    suspend fun removeBookmark(articleId: String) {
+        //TODO
+
     }
 
 }

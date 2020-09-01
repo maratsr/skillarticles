@@ -10,14 +10,10 @@ import ru.skillbranch.skillarticles.data.local.entities.Tag
 
 @Dao
 interface TagsDao: BaseDao<Tag> {
-    @Query("""
-        select tag from article_tags order by use_count desc
-    """)
+    @Query("select tag from article_tags order by use_count desc")
     fun findTags(): LiveData<List<String>>
 
-    @Query("""
-        update article_tags set use_count=use_count+1 where tag=:tag
-    """)
+    @Query("update article_tags set use_count=use_count+1 where tag=:tag")
     suspend fun incrementTagUseCount(tag: String)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)

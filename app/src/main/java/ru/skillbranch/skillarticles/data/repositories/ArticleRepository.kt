@@ -140,13 +140,33 @@ object ArticleRepository : IArticleRepository{
     }
 
     suspend fun addBookmark(articleId: String) {
-        //TODO
-        return
+        articlePersonalDao.addToBookmark(articleId)
+        if(preferences.accessToken.isEmpty()) {
+            return
+        }
+
+        try {
+            network.addBookmark(articleId, preferences.accessToken)
+        } catch (e: NoNetworkError) {
+            return
+        } catch (e: Throwable) {
+            throw e
+        }
     }
 
     suspend fun removeBookmark(articleId: String) {
-        //TODO
+        articlePersonalDao.removeFromBookmark(articleId)
+        if(preferences.accessToken.isEmpty()) {
+            return
+        }
 
+        try {
+            network.removeBookmark(articleId, preferences.accessToken)
+        } catch (e: NoNetworkError) {
+            return
+        } catch (e: Throwable) {
+            throw e
+        }
     }
 
 }

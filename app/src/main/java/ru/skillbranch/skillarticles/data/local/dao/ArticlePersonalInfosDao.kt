@@ -39,6 +39,19 @@ interface ArticlePersonalInfosDao: BaseDao<ArticlePersonalInfo> {
         return isBookmarked(articleId)
     }
 
+    @Transaction
+    suspend fun addToBookmark(articleId: String) {
+        toggleBookmarkOrInsert(articleId)
+        if (!isBookmarked(articleId)) toggleBookmark(articleId)
+    }
+
+    @Transaction
+    suspend fun removeFromBookmark(articleId: String) {
+        toggleBookmarkOrInsert(articleId)
+        if (isBookmarked(articleId)) toggleBookmark(articleId)
+    }
+
+
     @Query("SELECT is_bookmark FROM article_personal_infos WHERE article_id = :articleId LIMIT 1")
     suspend fun isBookmarked(articleId: String): Boolean
 

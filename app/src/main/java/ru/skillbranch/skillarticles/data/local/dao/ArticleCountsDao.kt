@@ -19,7 +19,6 @@ interface ArticleCountsDao: BaseDao<ArticleCounts> {
     @Query("select * from article_counts")
     fun findArticleCounts(): LiveData<List<ArticleCounts>>
 
-
     @Query("select * from article_counts where article_id = :articleId")
     fun findArticleCounts(articleId: String): LiveData<ArticleCounts>
 

@@ -458,7 +458,6 @@ class RepositoryTest1 {
                 Assert.assertEquals(true, e is ApiError.BadRequest)
                 Assert.assertEquals("Already remove from bookmarks", e.message)
             }
-
         }
     }
 

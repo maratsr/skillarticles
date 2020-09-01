@@ -61,14 +61,12 @@ class ArticleViewModel(
             )
         }
 
-
         subscribeOnDataSource(repository.getAppSettings()) { settings, state ->
             state.copy(
                 isDarkMode = settings.isDarkMode,
                 isBigText = settings.isBigText
             )
         }
-
         subscribeOnDataSource(repository.isAuth()) { auth, state ->  state.copy(isAuth = auth) }
     }
 

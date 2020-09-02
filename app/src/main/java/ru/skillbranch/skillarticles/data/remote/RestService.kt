@@ -75,7 +75,7 @@ interface RestService {
 
     // https://skill-articles.skill-branch.ru/api/v1/auth/refresh
     @POST("auth/refresh")
-    fun refreshToken(
+    fun refreshAccessToken(
         @Body refreshToken: RefreshReq
     ): Call<AuthRes>
 }

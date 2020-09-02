@@ -77,5 +77,5 @@ interface RestService {
     @POST("auth/refresh")
     fun refreshAccessToken(
         @Body refreshToken: RefreshReq
-    ): Call<AuthRes>
+    ): Call<RefreshRes>
 }

@@ -1,79 +1,141 @@
 package ru.skillbranch.skillarticles.ui.profile
 
 
-import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Environment
+import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
-import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.fragment_profile.*
 import ru.skillbranch.skillarticles.R
-import ru.skillbranch.skillarticles.extensions.dpToIntPx
 import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.ui.base.Binding
-import ru.skillbranch.skillarticles.ui.custom.ShimmerDrawable
 import ru.skillbranch.skillarticles.ui.delegates.RenderProp
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
+import ru.skillbranch.skillarticles.viewmodels.profile.PendingAction
 import ru.skillbranch.skillarticles.viewmodels.profile.ProfileState
 import ru.skillbranch.skillarticles.viewmodels.profile.ProfileViewModel
-import kotlin.properties.Delegates
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ProfileFragment : BaseFragment<ProfileViewModel>() {
 
     override val viewModel: ProfileViewModel by viewModels()
     override val layout: Int = R.layout.fragment_profile
-    override val binding: Binding by lazy { ProfileBinding() }
+    override val binding: ProfileBinding by lazy { ProfileBinding()}
 
-    //var cornerRadius by Delegates.notNull<Int>()
-    lateinit var avatarShimmer: ShimmerDrawable
+    // Callback на запрос нескольких permissions
+    private val permissionResultCallback =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            Log.e("ProfileFragment","request runtime permissions result: $result")
+            val permissionsResult = result.mapValues { (permission, isGranted) ->
+                if (isGranted) {
+                    true to true
+                } else {
+                    false to ActivityCompat.shouldShowRequestPermissionRationale( // можно ли повторно запросить permission у пользователя (Запрет повторного запроса есть или нет)
+                        requireActivity(),
+                        permission
+                    )
+                }
+            }
+            Log.e("ProfileFragment","request runtime permissions result: $permissionsResult")
+
+            viewModel.handlePermission(permissionsResult)
+        }
+
+    private val galleryResultCallback = // результат выбора фото из галлереи
+        registerForActivityResult(ActivityResultContracts.GetContent()) { result ->
+            if (result != null) {
+                val inputStream = requireContext().contentResolver.openInputStream(result)
+                viewModel.handleUploadedPhoto(inputStream)
+            }
+        }
+
+
+    private val settingsResultCallback =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            //DO something if needed
+        }
+
+    private val cameraResultCallback = // Получение изображения с камеры
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { result ->
+            val (payload) = binding.pendingAction as PendingAction.CameraAction
+
+            if (result) { // Фотография была сделана и сохранена
+                requireContext().contentResolver.openInputStream(payload)
+                    ?.let { viewModel.handleUploadedPhoto(it) }
+            } else { //удалить временный файл по Uri
+                removeTempUri(payload)
+            }
+        }
 
     override fun setupViews() {
+        iv_avatar.setOnClickListener {
+            val uri = prepareTempUri()
+            viewModel.handleTestAction(uri)
+        }
+
+        viewModel.observePermissions(viewLifecycleOwner) {
+            // launch callback for request permissions
+            permissionResultCallback.launch(it.toTypedArray())
+        }
+
+        viewModel.observeActivityResults(viewLifecycleOwner) {
+            when (it) {
+                is PendingAction.GalleryAction -> galleryResultCallback.launch(it.payload)
+                is PendingAction.SettingsAction -> settingsResultCallback.launch(it.payload)
+                is PendingAction.CameraAction -> cameraResultCallback.launch(it.payload)
+            }
+        }
     }
 
     private fun updateAvatar(avatarUrl: String) {
-        val avatarShimmer = ShimmerDrawable.Builder()
-            .setBaseColor(root.getColor(R.color.color_gray_light))
-            .setHighlightColor(requireContext().getColor(R.color.color_divider))
-            .setShimmerWidth(resources.displayMetrics.widthPixels - root.dpToIntPx(168))
-            .addShape(ShimmerDrawable.Shape.Round(root.dpToIntPx(168)))
-            .build()
-            .apply { start() }
+        if (avatarUrl.isBlank()) {
+            Glide.with(root)
+                .load(R.drawable.ic_avatar)
+                .into(iv_avatar)
+        } else {
+            Glide.with(root)
+                .load(avatarUrl)
+                .placeholder(R.drawable.ic_avatar)
+                .apply(circleCropTransform())
+                .into(iv_avatar)
+        }
+    }
 
-        Glide.with(root)
-        .load(avatarUrl)
-        .listener(object : RequestListener<Drawable> {
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<Drawable>?,
-                isFirstResource: Boolean
-            ): Boolean = false;
+    private fun removeTempUri(uri: Uri) {
+        requireContext().contentResolver.delete(uri, null, null)
+    }
 
-            override fun onResourceReady(
-                resource: Drawable?,
-                model: Any?,
-                target: Target<Drawable>?,
-                dataSource: DataSource?,
-                isFirstResource: Boolean
-            ): Boolean {
-                avatarShimmer.stop()
-                return false
-            }
+    private fun prepareTempUri(): Uri { // Подготовим ContentUri для сохранения файла с камеры
+        val timestamp = SimpleDateFormat("HHmmss", Locale.getDefault()).format(Date())
+        val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val tempFile = File.createTempFile( // Пустой временный файл с уникальным именем
+            "JPEG_${timestamp}",
+            ".jpg",
+            storageDir
+        )
 
-        })
-        .placeholder(avatarShimmer)
-        .error(R.drawable.ic_avatar)
-        .apply(circleCropTransform())
-        .override(root.dpToIntPx(168))
-        .into(iv_avatar)
+        val contentUri = FileProvider.getUriForFile( // Составляем URI к файлу
+            requireContext(),
+            "${requireContext().packageName}.provider",
+            tempFile
+        )
+
+        Log.d("ProfileFragment", "file uri(toUri): ${tempFile.toUri()}")
+        Log.d("ProfileFragment", "content uri: $contentUri")
+
+        return contentUri // данный URI можно передать в другие приложения
     }
 
     inner class ProfileBinding() : Binding() {
+        var pendingAction: PendingAction? = null
         var avatar by RenderProp("") {updateAvatar(it) }
         var name by RenderProp("") { tv_name.text = it }
         var about by RenderProp("") { tv_about.text = it }
@@ -87,6 +149,7 @@ class ProfileFragment : BaseFragment<ProfileViewModel>() {
             if (data.about != null){ about = data.about }
             rating = data.rating
             respect = data.respect
+            if (data.pendingAction != null) {pendingAction = data.pendingAction}
         }
     }
 }

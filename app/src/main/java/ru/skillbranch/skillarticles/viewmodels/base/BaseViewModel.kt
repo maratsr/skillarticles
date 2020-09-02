@@ -20,10 +20,15 @@ abstract class BaseViewModel<T : IViewModelState>(
 ) : ViewModel() {
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val notifications = MutableLiveData<Event<Notify>>()
+
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     val navigation = MutableLiveData<Event<NavigationCommand>>()
 
-    val loading = MutableLiveData<Loading>(Loading.HIDE_LOADING) // для индикатора загрузку
+    val loading = MutableLiveData<Loading>(Loading.HIDE_LOADING) // для индикатора загрузки
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    val permissions = MutableLiveData<Event<List<String>>>() // для запроса разрешений данной Activity
+
 
     /***
      * Инициализация начального состояния аргументом конструктоа, и объявления состояния как
@@ -180,6 +185,14 @@ abstract class BaseViewModel<T : IViewModelState>(
             hideLoading() // скрыть индикатор загрузки по выполнию suspend переданной функции
             compHandler?.invoke(it)
         }
+    }
+
+    fun requestPermissions(requestedPermissions: List<String>) {
+        permissions.value = Event(requestedPermissions)
+    }
+
+    fun observePermissions(owner: LifecycleOwner, handle: (permissions: List<String>) -> Unit) {
+        permissions.observe(owner, EventObserver { handle(it) })
     }
 }
 

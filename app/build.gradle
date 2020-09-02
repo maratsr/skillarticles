@@ -88,7 +88,9 @@ dependencies {
     kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
     implementation "com.squareup.okhttp3:mockwebserver:$okhttp_version"
 
-    //activity fragment callbacks
+    //activity fragment result API
+    implementation "androidx.activity:activity-ktx:$activity_ktx_version"
+    implementation "androidx.fragment:fragment-ktx:$fragment_ktx_version"
 
     testImplementation 'junit:junit:4.12'
     //testImplementation "com.squareup.okhttp3:mockwebserver:$okhttp_version"

@@ -55,4 +55,8 @@ object PrefManager {
         isDarkMode = appSettings.isDarkMode
         isBigText = appSettings.isBigText
     }
+
+    fun replaceAvatarUrl(url: String) {
+        profile = profile!!.copy(avatar = url)
+    }
 }

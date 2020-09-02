@@ -28,8 +28,8 @@ object NetworkManager {
             .readTimeout(2, TimeUnit.SECONDS)    // socket timeout (GET)
             .writeTimeout(5, TimeUnit.SECONDS)   // socket timeout (POST, PUT, etc.)
             .addInterceptor(NetworkStatusInterceptor()) // intercept network status
-            .authenticator(TokenAuthenticator()) // попытаться получить новый access токен через refresh токен
             .addInterceptor(logging)                    // log requests/results
+            .authenticator(TokenAuthenticator()) // попытаться получить новый access токен через refresh токен
             .addInterceptor(ErrorStatusInterceptor())   // intercept network errors
             .build()
 

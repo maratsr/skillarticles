@@ -10,7 +10,7 @@ import ru.skillbranch.skillarticles.data.remote.req.RefreshReq
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 
 class TokenAuthenticator : Authenticator {
-    private val network = NetworkManager.api
+    private val network by lazy {NetworkManager.api}
     private val preferences = PrefManager
 
     override fun authenticate(route: Route?, response: Response): Request? {
@@ -18,6 +18,7 @@ class TokenAuthenticator : Authenticator {
             val authResponse = network
                 .refreshToken(RefreshReq(preferences.refreshToken))
                 .execute()
+
             if (authResponse.isSuccessful && authResponse.body() != null) {
                 preferences.accessToken = "Bearer {${authResponse.body()!!.accessToken}}"
                 preferences.refreshToken = authResponse.body()!!.refreshToken

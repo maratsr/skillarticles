@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Пусть доступа из вне к файлам-->
+<!--Пусть доступа из вне к файлам, cache-path - так как Glide работает с кешем-->
 <paths>
     <external-path
         name="external_files"
         path="."/>
+    <cache-path
+        name="share"
+        path="image_manager_disk_cache"/>
 </paths>

@@ -3,12 +3,15 @@ package ru.skillbranch.skillarticles.viewmodels.profile
 import android.Manifest
 import android.content.Intent
 import android.net.Uri
+import android.os.Parcel
 import android.os.Parcelable
 import android.provider.Settings
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import kotlinx.android.parcel.Parcelize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -44,13 +47,6 @@ class ProfileViewModel(handle: SavedStateHandle) :
 
     private fun startForResult(action: PendingAction) {
         activityResults.value = Event(action)
-    }
-
-    fun handleTestAction(uri: Uri) {
-        //val pendingAction = PendingAction.GalleryAction("image/jpeg")
-        val pendingAction = PendingAction.CameraAction(uri)
-        updateState { it.copy(pendingAction = pendingAction) }
-        requestPermissions(storagePermissions)
     }
 
     fun handlePermission(permissionsResult: Map<String, Pair<Boolean, Boolean>>) { // Обработка результата запроса разрешений
@@ -90,21 +86,44 @@ class ProfileViewModel(handle: SavedStateHandle) :
     fun handleUploadedPhoto(inputStream: InputStream?) { // Обработка загрузки фото
         inputStream ?: return
 
-        val byteArray = inputStream.use {//use закрывает inputstream по окончании обработки
-            it.readBytes()
-        }
+        launchSafety(null, {updateState { it.copy(pendingAction = null) }} ) {
+            // Чтение файла в background-е
+            val byteArray = withContext(Dispatchers.IO) {
+                inputStream.use {//use закрывает inputstream по окончании обработки
+                    it.readBytes()
+                }
+            }
 
-        val requestFile = byteArray.toRequestBody("image/jpeg".toMediaType())
-        // любое имя файла, так как backend перезапишет
-        val body = MultipartBody.Part.createFormData("avatar", "name.jpg", requestFile)
-
-        launchSafety {
+            val requestFile = byteArray.toRequestBody("image/jpeg".toMediaType())
+            // любое имя файла, так как backend перезапишет
+            val body = MultipartBody.Part.createFormData("avatar", "name.jpg", requestFile)
             repository.uploadAvatar(body)
         }
     }
 
     fun observeActivityResults(owner: LifecycleOwner, handle: (action: PendingAction) -> Unit) {
         activityResults.observe(owner, EventObserver { handle(it) })
+    }
+
+    fun handleEditAction(source: Uri, destination: Uri) {
+        updateState { it.copy(pendingAction = PendingAction.EditAction(source to destination)) }
+        requestPermissions(storagePermissions)
+    }
+
+
+    fun handleCameraAction(destination: Uri) {
+        updateState { it.copy(pendingAction = PendingAction.CameraAction(destination)) }
+        requestPermissions(storagePermissions)
+    }
+
+    fun handleGalleryAction() {
+        updateState { it.copy(pendingAction = PendingAction.GalleryAction("image/jpeg")) }
+        requestPermissions(storagePermissions)
+    }
+
+    fun handleDeleteAction() {
+        TODO("Not yet implemented")
+        // use repository method
     }
 
 }
@@ -138,4 +157,27 @@ sealed class PendingAction() : Parcelable { // Обертка, вызываем�
 
     @Parcelize
     data class CameraAction(override val payload: Uri) : PendingAction() // payload - uri по которому будет сохранено изображение с камеры
+
+    data class EditAction(override val payload: Pair<Uri, Uri>) : PendingAction(), Parcelable {
+        constructor(parcel: Parcel) : this(Uri.parse(parcel.readString()) to Uri.parse(parcel.readString()))
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeString(payload.first.toString())
+            parcel.writeString(payload.second.toString())
+        }
+
+        companion object CREATOR : Parcelable.Creator<EditAction> {
+            override fun createFromParcel(parcel: Parcel): EditAction {
+                return EditAction(parcel)
+            }
+
+            override fun newArray(size: Int): Array<EditAction?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
 }

@@ -7,8 +7,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,9 +23,14 @@ import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 
 class ChoseCategoryDialog : DialogFragment() {
-    private val viewModel : ArticlesViewModel by activityViewModels() // shared viewModel для 3х фрагментов
+    //private val viewModel : ArticlesViewModel by activityViewModels() // shared viewModel для 3х фрагментов
     private val selectedCategories = mutableListOf<String>()
     private val args : ChoseCategoryDialogArgs by  navArgs()
+
+    companion object {
+        const val CHOOSE_CATEGORY_KEY = "CHOOSE_CATEGORY_KEY"
+        const val SELECTED_CATEGORIES = "SELECTED_CATEGORIES"
+    }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val categories = args.categories.toList()  // Собственно элементы
@@ -53,8 +60,11 @@ class ChoseCategoryDialog : DialogFragment() {
                     layoutManager = LinearLayoutManager(context)
                     adapter = categoriesListAdapter
                 })
-            .setPositiveButton("Apply") {_, _ ->  viewModel.applyCategories(selectedCategories) }
-            .setNegativeButton("Reset") {_, _ ->  viewModel.applyCategories(emptyList()) }
+            .setPositiveButton("Apply") {_, _ ->
+                setFragmentResult(CHOOSE_CATEGORY_KEY, bundleOf(SELECTED_CATEGORIES to selectedCategories.toList()))
+            }
+            .setNegativeButton("Reset") {_, _ ->
+                setFragmentResult(CHOOSE_CATEGORY_KEY, bundleOf(SELECTED_CATEGORIES to emptyList<String>())) }
         return adb.create()
     }
 

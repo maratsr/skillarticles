@@ -3,13 +3,11 @@ package ru.skillbranch.skillarticles.ui.dialogs
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DiffUtil
@@ -20,11 +18,10 @@ import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.item_category.view.*
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
-import ru.skillbranch.skillarticles.viewmodels.articles.ArticlesViewModel
 
 class ChoseCategoryDialog : DialogFragment() {
     //private val viewModel : ArticlesViewModel by activityViewModels() // shared viewModel для 3х фрагментов
-    private val selectedCategories = mutableListOf<String>()
+    private val selected = mutableListOf<String>()
     private val args : ChoseCategoryDialogArgs by  navArgs()
 
     companion object {
@@ -35,21 +32,21 @@ class ChoseCategoryDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val categories = args.categories.toList()  // Собственно элементы
 
-        selectedCategories.addAll(
+        selected.addAll(
             savedInstanceState
-                ?.getStringArray(::selectedCategories.name) ?:
+                ?.getStringArray(::selected.name) ?:
             args.selectedCategories
         )
 
         val categoriesListAdapter =
-            CategoriesListAdapter() { item, isChecked ->
+            CategoryAdapter() { item, isChecked ->
                 if (isChecked)
-                    selectedCategories.add(item.categoryId)
+                    selected.add(item.categoryId)
                 else
-                    selectedCategories.remove(item.categoryId)
+                    selected.remove(item.categoryId)
             }.apply {
                 submitList(categories.map {
-                    it.toCategoryItem(isChecked = it.categoryId in selectedCategories)
+                    it.toCategoryItem(isChecked = it.categoryId in selected)
                 })
             }
 
@@ -61,7 +58,7 @@ class ChoseCategoryDialog : DialogFragment() {
                     adapter = categoriesListAdapter
                 })
             .setPositiveButton("Apply") {_, _ ->
-                setFragmentResult(CHOOSE_CATEGORY_KEY, bundleOf(SELECTED_CATEGORIES to selectedCategories.toList()))
+                setFragmentResult(CHOOSE_CATEGORY_KEY, bundleOf(SELECTED_CATEGORIES to selected.toList()))
             }
             .setNegativeButton("Reset") {_, _ ->
                 setFragmentResult(CHOOSE_CATEGORY_KEY, bundleOf(SELECTED_CATEGORIES to emptyList<String>())) }
@@ -70,10 +67,10 @@ class ChoseCategoryDialog : DialogFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putStringArray(::selectedCategories.name, selectedCategories.toTypedArray())
+        outState.putStringArray(::selected.name, selected.toTypedArray())
     }
 
-    private class CategoriesListAdapter(
+    private class CategoryAdapter(
         private val listener: (CategoryItem, Boolean) -> Unit
     ) : ListAdapter<CategoryItem, RecyclerView.ViewHolder>(CategoriesDiffUtilCallback()) {
 

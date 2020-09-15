@@ -48,7 +48,6 @@ class AvatarActionsDialog :BottomSheetDialogFragment() {
         }
 
         val hasAvatar = args.hasAvatar
-
         item_edit.isVisible = hasAvatar
         item_edit.setOnClickListener{
             setFragmentResult(AVATAR_ACTIONS_KEY, bundleOf(SELECT_ACTION_KEY to EDIT_KEY))

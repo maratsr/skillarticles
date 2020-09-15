@@ -19,10 +19,12 @@ class TokenAuthenticator : Authenticator {
 
             return if(!res.isSuccessful) null
             else {
+                // save new pair (access+refresh tokens)
                 val newAccessToken = res.body()!!.accessToken
                 prefs.accessToken = "Bearer ${newAccessToken}"
                 prefs.refreshToken = res.body()!!.refreshToken
 
+                // retry request with bew access token
                 response.request.newBuilder()
                     .header("Authorization", "Bearer ${newAccessToken}")
                     .build()

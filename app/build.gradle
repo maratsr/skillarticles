@@ -104,7 +104,8 @@ dependencies {
     androidTestImplementation 'androidx.test:core:1.2.0'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test:rules:1.2.0'
-    androidTestImplementation 'android.arch.core:core-testing:1.1.1'
-    androidTestImplementation 'com.jraska.livedata:testing-ktx:1.1.1'
+    androidTestImplementation 'com.jraska.livedata:testing-ktx:1.1.2'
+    androidTestImplementation "android.arch.core:core-testing:1.1.1"
+    debugImplementation 'androidx.fragment:fragment-testing:1.2.5'
 
 }

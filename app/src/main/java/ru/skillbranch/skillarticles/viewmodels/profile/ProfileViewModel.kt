@@ -45,17 +45,17 @@ class ProfileViewModel(handle: SavedStateHandle) :
         }
     }
 
-    private fun startForResult(action: PendingAction) {
+    fun startForResult(action: PendingAction) {
         activityResults.value = Event(action)
     }
 
     fun handlePermission(permissionsResult: Map<String, Pair<Boolean, Boolean>>) { // Обработка результата запроса разрешений
-        val arePermissionsGranted = !permissionsResult.values.map { it.first }.contains(false)
-        val isPermissionRequestBlocked = permissionsResult.values.map { it.second }.contains(false)
+        val isAllGranted = !permissionsResult.values.map { it.first }.contains(false)
+        val isAllMayBeShown = permissionsResult.values.map { it.second }.contains(false)
 
         when {
-            arePermissionsGranted -> executePendingAction() // Все разрешения выданы - запустить action
-            isPermissionRequestBlocked -> executeOpenSettings() // Если нажата don't ask again - то остается только вызвать экран настроек
+            isAllGranted -> executePendingAction() // Все разрешения выданы - запустить action
+            isAllMayBeShown -> executeOpenSettings() // Если нажата don't ask again - то остается только вызвать экран настроек
             else -> { // Перезапросим разрешения (покажем snackBar
                 val msg = Notify.ErrorMessage(
                     "Need permissions for storage",
@@ -66,7 +66,7 @@ class ProfileViewModel(handle: SavedStateHandle) :
         }
     }
 
-    private fun executeOpenSettings() {
+    fun executeOpenSettings() {
         val errHandler = {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.parse("package:ru.skillbranch.skillarticles")
@@ -78,12 +78,12 @@ class ProfileViewModel(handle: SavedStateHandle) :
         )
     }
 
-    private fun executePendingAction() {
+    fun executePendingAction() {
         val pendingAction = currentState.pendingAction ?: return
         startForResult(pendingAction)
     }
 
-    fun handleUploadedPhoto(inputStream: InputStream?) { // Обработка загрузки фото
+    fun handleUploadPhoto(inputStream: InputStream?) { // Обработка загрузки фото
         inputStream ?: return
 
         launchSafety(null, {updateState { it.copy(pendingAction = null) }} ) {

@@ -146,7 +146,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             .build()
             .apply { start() }
 
-        Glide.with(root)
+        Glide.with(this)//Glide.with(root)
             .load(args.authorAvatar)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
@@ -173,7 +173,7 @@ class ArticleFragment : BaseFragment<ArticleViewModel>(), IArticleView {
             .override(avatarSize)
             .into(iv_author_avatar)
 
-        Glide.with(root)
+        Glide.with(this)//Glide.with(root)
             .load(args.poster)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(

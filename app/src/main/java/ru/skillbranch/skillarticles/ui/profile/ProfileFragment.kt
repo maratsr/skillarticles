@@ -149,11 +149,11 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
 
     private fun updateAvatar(avatarUrl: String) {
         if (avatarUrl.isBlank()) {
-            Glide.with(root)
+            Glide.with(this) // Glide.with(root)
                 .load(R.drawable.ic_avatar)
                 .into(iv_avatar)
         } else {
-            Glide.with(root)
+            Glide.with(this)//Glide.with(root)
                 .load(avatarUrl)
                 .placeholder(R.drawable.ic_avatar)
                 .apply(circleCropTransform())

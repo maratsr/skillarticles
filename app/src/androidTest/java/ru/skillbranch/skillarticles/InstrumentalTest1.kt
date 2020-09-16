@@ -181,6 +181,102 @@ class InstrumentalTest1 {
         }
     }
 
+    /*
+   Started running tests
+
+
+java.lang.RuntimeException: java.lang.NullPointerException: Attempt to invoke virtual method 'boolean android.app.ActivityManager.isLowRamDevice()' on a null object reference
+at androidx.test.runner.MonitoringInstrumentation.runOnMainSync(MonitoringInstrumentation.java:441)
+at androidx.test.core.app.ActivityScenario.onActivity(ActivityScenario.java:564)
+at androidx.fragment.app.testing.FragmentScenario.internalLaunch(FragmentScenario.java:300)
+at androidx.fragment.app.testing.FragmentScenario.launch(FragmentScenario.java:213)
+at ru.skillbranch.skillarticles.InstrumentalTest1.prepare_and_delete_uri(InstrumentalTest1.kt:518)
+at java.lang.reflect.Method.invoke(Native Method)
+at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+at androidx.test.internal.runner.junit4.statement.RunBefores.evaluate(RunBefores.java:80)
+at androidx.test.internal.runner.junit4.statement.RunAfters.evaluate(RunAfters.java:61)
+at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+at androidx.test.ext.junit.runners.AndroidJUnit4.run(AndroidJUnit4.java:104)
+at org.junit.runners.Suite.runChild(Suite.java:128)
+at org.junit.runners.Suite.runChild(Suite.java:27)
+at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
+at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
+at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:56)
+at androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:392)
+at android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2074)
+Caused by: java.lang.NullPointerException: Attempt to invoke virtual method 'boolean android.app.ActivityManager.isLowRamDevice()' on a null object reference
+at com.bumptech.glide.load.engine.cache.MemorySizeCalculator.isLowMemoryDevice(MemorySizeCalculator.java:119)
+at com.bumptech.glide.load.engine.cache.MemorySizeCalculator$Builder.<init>(MemorySizeCalculator.java:169)
+at com.bumptech.glide.GlideBuilder.build(GlideBuilder.java:515)
+at com.bumptech.glide.Glide.initializeGlide(Glide.java:290)
+at com.bumptech.glide.Glide.initializeGlide(Glide.java:242)
+at com.bumptech.glide.Glide.checkAndInitializeGlide(Glide.java:201)
+at com.bumptech.glide.Glide.get(Glide.java:182)
+at com.bumptech.glide.Glide.getRetriever(Glide.java:749)
+at com.bumptech.glide.Glide.with(Glide.java:801)
+at ru.skillbranch.skillarticles.ui.profile.ProfileFragment.updateAvatar(ProfileFragment.kt:152)
+at ru.skillbranch.skillarticles.ui.profile.ProfileFragment.access$updateAvatar(ProfileFragment.kt:44)
+at ru.skillbranch.skillarticles.ui.profile.ProfileFragment$ProfileBinding$avatar$2.invoke(ProfileFragment.kt:252)
+at ru.skillbranch.skillarticles.ui.profile.ProfileFragment$ProfileBinding$avatar$2.invoke(ProfileFragment.kt:250)
+at ru.skillbranch.skillarticles.ui.delegates.RenderProp.bind(RenderProp.kt:15)
+at ru.skillbranch.skillarticles.ui.base.Binding.rebind(Binding.kt:21)
+at ru.skillbranch.skillarticles.ui.base.BaseFragment.onViewStateRestored(BaseFragment.kt:78)
+at androidx.fragment.app.Fragment.restoreViewState(Fragment.java:631)
+at androidx.fragment.app.Fragment.restoreViewState(Fragment.java:2982)
+at androidx.fragment.app.Fragment.performActivityCreated(Fragment.java:2973)
+at androidx.fragment.app.FragmentStateManager.activityCreated(FragmentStateManager.java:597)
+at androidx.fragment.app.FragmentStateManager.moveToExpectedState(FragmentStateManager.java:279)
+at androidx.fragment.app.FragmentStore.moveToExpectedState(FragmentStore.java:112)
+at androidx.fragment.app.FragmentManager.moveToState(FragmentManager.java:1632)
+at androidx.fragment.app.BackStackRecord.executeOps(BackStackRecord.java:455)
+at androidx.fragment.app.FragmentManager.executeOps(FragmentManager.java:2389)
+at androidx.fragment.app.FragmentManager.executeOpsTogether(FragmentManager.java:2145)
+at androidx.fragment.app.FragmentManager.removeRedundantOperationsAndExecute(FragmentManager.java:2083)
+at androidx.fragment.app.FragmentManager.execSingleAction(FragmentManager.java:1954)
+at androidx.fragment.app.BackStackRecord.commitNow(BackStackRecord.java:300)
+at androidx.fragment.app.testing.FragmentScenario$1.perform(FragmentScenario.java:317)
+at androidx.fragment.app.testing.FragmentScenario$1.perform(FragmentScenario.java:301)
+at androidx.test.core.app.ActivityScenario.lambda$onActivity$2$ActivityScenario(ActivityScenario.java:551)
+at androidx.test.core.app.ActivityScenario$$Lambda$4.run(Unknown Source:4)
+at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:457)
+at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+at android.app.Instrumentation$SyncRunnable.run(Instrumentation.java:2092)
+at android.os.Handler.handleCallback(Handler.java:789)
+at android.os.Handler.dispatchMessage(Handler.java:98)
+at android.os.Looper.loop(Looper.java:164)
+at android.app.ActivityThread.main(ActivityThread.java:6541)
+at java.lang.reflect.Method.invoke(Native Method)
+at com.android.internal.os.Zygote$MethodAndArgsCaller.run(Zygote.java:240)
+at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:767)
+
+Test running failed: Instrumentation run failed due to 'Process crashed.'
+Tests ran to completion.
+
+
+     */
+
     @Test
     fun prepare_and_delete_uri() {
         val expectedPath =

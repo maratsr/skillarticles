@@ -161,7 +161,7 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
         }
     }
 
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun prepareTempUri(): Uri { // Подготовим ContentUri для сохранения файла с камеры
         val timestamp = SimpleDateFormat("HHmmss", Locale.getDefault()).format(Date())
         val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
@@ -177,8 +177,8 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
             tempFile
         )
 
-        Log.e("ProfileFragment", "file uri(toUri): ${tempFile.toUri()}")
-        Log.e("ProfileFragment", "content uri: $contentUri")
+        //Log.e("ProfileFragment", "file uri(toUri): ${tempFile.toUri()}")
+        //Log.e("ProfileFragment", "content uri: $contentUri")
 
         return contentUri // данный URI можно передать в другие приложения
     }

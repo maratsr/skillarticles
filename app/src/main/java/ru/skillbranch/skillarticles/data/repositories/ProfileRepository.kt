@@ -5,6 +5,7 @@ import okhttp3.MultipartBody
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.models.User
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.req.EditProfileReq
 
 interface IProfileRepository {
     fun getProfile(): LiveData<User?>
@@ -25,11 +26,20 @@ object ProfileRepository : IProfileRepository {
     }
 
     override suspend fun editProfile(name: String, about: String) {
+        val profileRes = network.editProfile(EditProfileReq(name, about), prefs.accessToken)
+        prefs.profile = prefs.profile!!.copy(
+            id = profileRes.id,
+            name = profileRes.name,
+            avatar = profileRes.avatar,
+            rating = profileRes.rating,
+            respect = profileRes.respect,
+            about = profileRes.about
+        )
     }
 
-
     override suspend fun removeAvatar() {
-
+        val (url) = network.avatarRemove(prefs.accessToken)
+        prefs.replaceAvatarUrl(url)
     }
 
 }

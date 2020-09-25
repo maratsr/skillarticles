@@ -64,7 +64,8 @@ abstract class BaseViewModel<T : IViewModelState>(
      * повторно
      */
     @UiThread
-    protected fun notify(content: Notify) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    fun notify(content: Notify) {
         notifications.value = Event(content)
     }
 

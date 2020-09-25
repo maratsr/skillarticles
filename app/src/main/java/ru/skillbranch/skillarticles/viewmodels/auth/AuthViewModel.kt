@@ -15,10 +15,11 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
         val REGEX_PASSWORD_CHECK="^[а-яА-Яa-zA-Z0-9_.-]{8,}\$".toRegex()
         val REGEX_EMAIL_CHECK = android.util.Patterns.EMAIL_ADDRESS.toRegex()
 
-        val INVALID_PASSWORD_MSG = "Password should be 8+ digit/letter symbols"
-        val INVALID_EMAIL_MSG = "Invalid email"
-        val INVALID_NAME_MSG = "Name should be 3+ digit/letter symbols"
+        val INVALID_PASSWORD_MSG = "Password must be at least 8 symbols long and contain only letters and digits"
+        val INVALID_EMAIL_MSG = "Incorrect email entered"
+        val INVALID_NAME_MSG = "Login must be at least 3 symbols long and contain only letters and digits"
         val INVALID_CONFIRM_MSG = "Password and confirm isn't equal"
+        val INVALID_BLANK_FIELD = "Name, login, password it is required fields and not must be empty"
 
     }
 
@@ -37,7 +38,8 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
     }
 
     override fun handleRegister(name: String, login: String, password: String, dest: Int?) {
-
+        if (name.isBlank() || login.isBlank() || password.isBlank())
+            notify( Notify.ErrorMessage(INVALID_BLANK_FIELD)).also {return}
         if (!name.matches(REGEX_NAME_CHECK))
             notify( Notify.ErrorMessage(INVALID_NAME_MSG)).also {return}
         if (!password.matches(REGEX_PASSWORD_CHECK))

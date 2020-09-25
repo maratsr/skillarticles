@@ -69,7 +69,7 @@
         android:hint="Password"
         style="@style/Base.Widget.MaterialComponents.TextInputLayout"
         android:theme="@style/TextInputLayoutAppearance"
-        app:layout_constraintBottom_toTopOf="@id/wrap_confirm_password"
+        app:layout_constraintBottom_toTopOf="@id/btn_sign_up"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/wrap_login">
@@ -81,26 +81,26 @@
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/wrap_confirm_password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="56dp"
-        android:layout_marginEnd="56dp"
-        android:hint="Confirm Password"
-        style="@style/Base.Widget.MaterialComponents.TextInputLayout"
-        android:theme="@style/TextInputLayoutAppearance"
-        app:layout_constraintBottom_toTopOf="@id/btn_sign_up"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/wrap_password">
+<!--    <com.google.android.material.textfield.TextInputLayout-->
+<!--        android:id="@+id/wrap_confirm_password"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="56dp"-->
+<!--        android:layout_marginEnd="56dp"-->
+<!--        android:hint="Confirm Password"-->
+<!--        style="@style/Base.Widget.MaterialComponents.TextInputLayout"-->
+<!--        android:theme="@style/TextInputLayoutAppearance"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/btn_sign_up"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/wrap_password">-->
 
-        <EditText
-            android:id="@+id/et_confirm_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword" />
-    </com.google.android.material.textfield.TextInputLayout>
+<!--        <EditText-->
+<!--            android:id="@+id/et_confirm_password"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:inputType="textPassword" />-->
+<!--    </com.google.android.material.textfield.TextInputLayout>-->
 
     <Button
         android:id="@+id/btn_sign_up"
@@ -113,7 +113,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/wrap_confirm_password" />
+        app:layout_constraintTop_toBottomOf="@id/wrap_password" />
 
     <TextView
         android:id="@+id/tv_privacy"

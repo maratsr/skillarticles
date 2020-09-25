@@ -17,7 +17,7 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
 
         val INVALID_PASSWORD_MSG = "Password should be 8+ digit/letter symbols"
         val INVALID_EMAIL_MSG = "Invalid email"
-        val INVALID_NAME_MSG = "Name should be 8+ digit/letter symbols"
+        val INVALID_NAME_MSG = "Name should be 3+ digit/letter symbols"
         val INVALID_CONFIRM_MSG = "Password and confirm isn't equal"
 
     }
@@ -38,9 +38,12 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
 
     override fun handleRegister(name: String, login: String, password: String, dest: Int?) {
 
-        if (!name.matches(REGEX_NAME_CHECK)) notify( Notify.ErrorMessage(INVALID_NAME_MSG)).also {return}
-        if (!password.matches(REGEX_PASSWORD_CHECK)) notify( Notify.ErrorMessage(INVALID_PASSWORD_MSG)).also {return}
-        if (!login.matches(REGEX_EMAIL_CHECK)) notify( Notify.ErrorMessage(INVALID_EMAIL_MSG)).also {return}
+        if (!name.matches(REGEX_NAME_CHECK))
+            notify( Notify.ErrorMessage(INVALID_NAME_MSG)).also {return}
+        if (!password.matches(REGEX_PASSWORD_CHECK))
+            notify( Notify.ErrorMessage(INVALID_PASSWORD_MSG)).also {return}
+        if (!login.matches(REGEX_EMAIL_CHECK))
+            notify( Notify.ErrorMessage(INVALID_EMAIL_MSG)).also {return}
 
         launchSafety(null, { navigate(NavigationCommand
             .FinishLogin(if (dest != null && dest < 0)  null else dest)) })

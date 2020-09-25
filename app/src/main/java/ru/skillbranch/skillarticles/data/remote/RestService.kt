@@ -99,6 +99,6 @@ interface RestService {
         @Header("Authorization") accessToken: String
     ): ProfileRes // Возврашается Url (пустой)
 
-    @PUT("auth/register")
+    @POST("auth/register")
     suspend fun signUp(@Body signUpReq: SignUpReq): AuthRes
 }

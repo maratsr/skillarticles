@@ -22,7 +22,7 @@ object NetworkManager {
         val client = OkHttpClient().newBuilder()
             .readTimeout(2, TimeUnit.SECONDS)    // socket timeout (GET)
             .writeTimeout(5, TimeUnit.SECONDS)   // socket timeout (POST, PUT, etc.)
-            .authenticator(TokenAuthenticator()) // попытаться получить новый access токен через refresh токен
+            .authenticator(TokenAuthenticator())        // попытаться получить новый access токен через refresh токен
             .addInterceptor(NetworkStatusInterceptor()) // intercept network status
             .addInterceptor(logging)                    // log requests/results
             .addInterceptor(ErrorStatusInterceptor())   // intercept network errors

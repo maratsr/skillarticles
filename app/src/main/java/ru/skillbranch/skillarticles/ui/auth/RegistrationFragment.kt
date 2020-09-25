@@ -10,11 +10,6 @@ import ru.skillbranch.skillarticles.ui.base.BaseFragment
 import ru.skillbranch.skillarticles.viewmodels.auth.AuthViewModel
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
 /*
 Реализуй фрагмент RegistrationFragment и соответствующие методы в AuthViewModel и RootRepository
 метод регистрации пользователя должен соответствовать следующей сигнатуре
@@ -40,7 +35,7 @@ class RegistrationFragment : BaseFragment<AuthViewModel>()  {
         btn_sign_up.setOnClickListener{
             if (et_password.text.toString() == et_confirm_password.text.toString())
                 viewModel.handleRegister(
-                    et_name.text.toString(), et_login.text.toString(), et_password.toString(),
+                    et_name.text.toString(), et_login.text.toString(), et_password.text.toString(),
                     args.privateDestination
                 )
             else

@@ -22,7 +22,8 @@ object RootRepository {
     }
 
     private fun setupPrincipal(authRes: AuthRes?) {
-        authRes?.let {
+        authRes
+            ?.let {
             preferences.profile = it.user
             // Получим токены
             preferences.accessToken = "Bearer ${it.accessToken}"

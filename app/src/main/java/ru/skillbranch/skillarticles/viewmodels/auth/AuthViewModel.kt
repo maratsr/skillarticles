@@ -16,7 +16,7 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
         val REGEX_EMAIL_CHECK = android.util.Patterns.EMAIL_ADDRESS.toRegex()
 
         val INVALID_PASSWORD_MSG = "Password must be at least 8 characters long and contain only letters and numbers"
-        val INVALID_EMAIL_MSG = "Incorrect email entered"
+        val INVALID_EMAIL_MSG = "Incorrect Email entered"
         val INVALID_NAME_MSG = "The name must be at least 3 characters long and contain only letters and numbers and can also contain the characters \"-\" and \"_\""
 
         val INVALID_CONFIRM_MSG = "Password and confirm isn't equal"

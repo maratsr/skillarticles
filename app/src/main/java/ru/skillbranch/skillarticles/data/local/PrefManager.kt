@@ -1,5 +1,6 @@
 package ru.skillbranch.skillarticles.data.local
 
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
@@ -12,9 +13,11 @@ import ru.skillbranch.skillarticles.data.delegates.PrefObjDelegate
 import ru.skillbranch.skillarticles.data.models.AppSettings
 import ru.skillbranch.skillarticles.data.models.User
 
-object PrefManager {
+class PrefManager(
+    context: Context // Передаем как параметр для выполнения init блока
+) {
     internal val preferences : SharedPreferences by lazy {
-        PreferenceManager.getDefaultSharedPreferences(App.applicationContext())
+        PreferenceManager.getDefaultSharedPreferences(context)
     }
 
     var isDarkMode by PrefDelegate(false)

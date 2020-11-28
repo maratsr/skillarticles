@@ -4,10 +4,12 @@ import android.content.Context
 import dagger.Module
 import dagger.Provides
 import ru.skillbranch.skillarticles.data.remote.NetworkMonitor
+import javax.inject.Singleton
 
 @Module
-class NetworkUtilsModule(val context: Context) {
+object NetworkUtilsModule{
     //legacy style
     @Provides
-    fun provideNetworkMonitor(): NetworkMonitor = NetworkMonitor(context)
+    @Singleton
+    fun provideNetworkMonitor(context: Context): NetworkMonitor = NetworkMonitor(context)
 }

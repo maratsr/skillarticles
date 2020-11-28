@@ -3,13 +3,19 @@ package ru.skillbranch.skillarticles.data.repositories
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.req.LoginReq
 import ru.skillbranch.skillarticles.data.remote.req.SignUpReq
 import ru.skillbranch.skillarticles.data.remote.res.AuthRes
+import javax.inject.Inject
 
-object RootRepository {
-    val preferences = PrefManager
-    private val network = NetworkManager.api
+class RootRepository
+    @Inject constructor( // Пометили @Inject чтобы Dagger мог впрыснуть зависимости PrefManager, RestService.
+        // Если понадобится RootRepository то Dagger знает как его создать с нужными зависимостями
+    private val preferences: PrefManager,
+    private val network: RestService,
+) {
+
 
     fun isAuth() : LiveData<Boolean> = preferences.isAuthLive
 

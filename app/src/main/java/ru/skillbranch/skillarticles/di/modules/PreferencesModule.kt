@@ -4,12 +4,14 @@ import android.content.Context
 import dagger.Module
 import dagger.Provides
 import ru.skillbranch.skillarticles.data.local.PrefManager
+import javax.inject.Singleton
 
 // МОдуль провайдяший SharedPreferences
 @Module
-class PreferencesModule(val context: Context) {
+object PreferencesModule {
 
     //legacy style
     @Provides
-    fun providePrefManager(): PrefManager = PrefManager(context)
+    @Singleton
+    fun providePrefManager(context: Context): PrefManager = PrefManager(context)
 }

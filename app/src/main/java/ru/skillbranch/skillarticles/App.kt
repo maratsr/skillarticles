@@ -38,11 +38,19 @@ class App : Application() { // В манифесте указываем его �
         super.onCreate()
 
         // DaggerAppComponent сгенерируется при ребилде проекта (по аннотациям Dagger)
+        // Старое (без фабрики или билдера создание)
+//        appComponent = DaggerAppComponent
+//            .builder()
+//            .preferencesModule(PreferencesModule(applicationContext))
+//            .networkUtilsModule(NetworkUtilsModule(applicationContext))
+//            .build()
+
+
+        // Создание если использовано @Component.Factory
         appComponent = DaggerAppComponent
-            .builder()
-            .preferencesModule(PreferencesModule(applicationContext))
-            .networkUtilsModule(NetworkUtilsModule(applicationContext))
-            .build()
+            .factory()
+            .create(applicationContext)
+
         // "Впрыснет" необходимые зависимости
         appComponent.inject(this)
 

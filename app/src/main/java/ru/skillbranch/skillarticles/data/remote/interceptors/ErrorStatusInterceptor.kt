@@ -2,14 +2,14 @@ package ru.skillbranch.skillarticles.data.remote.interceptors
 
 import android.util.Log
 import com.squareup.moshi.JsonEncodingException
+import com.squareup.moshi.Moshi
 import okhttp3.Interceptor
 import okhttp3.Response
-import ru.skillbranch.skillarticles.data.JsonConverter.moshi
 import ru.skillbranch.skillarticles.data.remote.err.ApiError
 import ru.skillbranch.skillarticles.data.remote.err.ErrorBody
 
 // Перехватывает response от сервера и отдает их как ошибку
-class ErrorStatusInterceptor : Interceptor {
+class ErrorStatusInterceptor(val moshi: Moshi) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val res = chain.proceed(chain.request())
 

@@ -5,11 +5,12 @@ import dagger.BindsInstance
 import dagger.Component
 import ru.skillbranch.skillarticles.App
 import ru.skillbranch.skillarticles.data.local.PrefManager
+import ru.skillbranch.skillarticles.di.modules.NetworkModule
 import ru.skillbranch.skillarticles.di.modules.NetworkUtilsModule
 import ru.skillbranch.skillarticles.di.modules.PreferencesModule
 import javax.inject.Singleton
 
-@Component(modules = [PreferencesModule::class, NetworkUtilsModule::class])
+@Component(modules = [PreferencesModule::class, NetworkUtilsModule::class, NetworkModule::class])
 @Singleton
 interface AppComponent {
 
@@ -19,5 +20,4 @@ interface AppComponent {
     }
 
     fun inject(app: App)
-    fun getPreferences(): PrefManager
 }

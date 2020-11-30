@@ -2,7 +2,6 @@ package ru.skillbranch.skillarticles.data.repositories
 
 import androidx.lifecycle.LiveData
 import ru.skillbranch.skillarticles.data.local.PrefManager
-import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.req.LoginReq
 import ru.skillbranch.skillarticles.data.remote.req.SignUpReq
@@ -14,7 +13,7 @@ class RootRepository
         // Если понадобится RootRepository то Dagger знает как его создать с нужными зависимостями
     private val preferences: PrefManager,
     private val network: RestService,
-) {
+) : IRepository {
 
 
     fun isAuth() : LiveData<Boolean> = preferences.isAuthLive

@@ -9,7 +9,6 @@ import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.local.dao.*
 import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
 import ru.skillbranch.skillarticles.data.models.*
-import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.err.NoNetworkError
 import ru.skillbranch.skillarticles.data.remote.req.MessageReq

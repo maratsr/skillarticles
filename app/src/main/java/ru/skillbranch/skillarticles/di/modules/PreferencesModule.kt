@@ -1,6 +1,7 @@
 package ru.skillbranch.skillarticles.di.modules
 
 import android.content.Context
+import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 import ru.skillbranch.skillarticles.data.local.PrefManager
@@ -13,5 +14,7 @@ object PreferencesModule {
     //legacy style
     @Provides
     @Singleton
-    fun providePrefManager(context: Context): PrefManager = PrefManager(context)
+    fun providePrefManager(
+        context: Context,
+        moshi: Moshi): PrefManager = PrefManager(context, moshi)
 }

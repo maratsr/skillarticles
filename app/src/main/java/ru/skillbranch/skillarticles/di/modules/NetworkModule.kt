@@ -4,12 +4,13 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
+import dagger.Lazy
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import ru.skillbranch.skillarticles.data.remote.adapters.DateAdapter
 import ru.skillbranch.skillarticles.AppConfig.BASE_URL
-import ru.skillbranch.skillarticles.data.JsonConverter
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.remote.NetworkMonitor
 import ru.skillbranch.skillarticles.data.remote.RestService
@@ -17,40 +18,74 @@ import ru.skillbranch.skillarticles.data.remote.interceptors.ErrorStatusIntercep
 import ru.skillbranch.skillarticles.data.remote.interceptors.NetworkStatusInterceptor
 import ru.skillbranch.skillarticles.data.remote.interceptors.TokenAuthenticator
 import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
 
+// Многие предоставляемые сущности - глобально видимые и в одном экземпляре - потому ставим им @Singleton
 @Module
 object NetworkModule {
 
-    val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
+    @Provides
+    @Singleton
+    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
 
     @Provides
+    @Singleton
     fun provideRestService(retrofit: Retrofit): RestService = retrofit.create(RestService::class.java)
 
     @Provides
-    fun provideRetrofit(client: OkHttpClient, moshi: Moshi): Retrofit = Retrofit.Builder()
-        .client(client)
-        .addConverterFactory(MoshiConverterFactory.create(moshi))
-        .baseUrl(BASE_URL)
-        .build()
+    @Singleton
+    fun provideRetrofit(client: OkHttpClient, moshi: Moshi): Retrofit =
+        Retrofit
+            .Builder()
+            .client(client)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .baseUrl(BASE_URL)
+            .build()
 
     @Provides
+    @Singleton
     fun provideOkHttpClient(
-        tokenAuthenticator: TokenAuthenticator,
-        networkStatusInterceptor: NetworkStatusInterceptor,
-        httpLoggingInterceptor: HttpLoggingInterceptor,
+        tokenAuthenticator: TokenAuthenticator, // Необходимые для создания OkHttpClient сущности объявим как параметры функции
+        networkStatusInterceptor: NetworkStatusInterceptor, // Для которых ниже объявиим соответствующие @Provide
+        logging: HttpLoggingInterceptor,
         errorStatusInterceptor: ErrorStatusInterceptor
-    ): OkHttpClient = OkHttpClient().newBuilder()
-        .readTimeout(2, TimeUnit.SECONDS)    // socket timeout (GET)
-        .writeTimeout(5, TimeUnit.SECONDS)   // socket timeout (POST, PUT, etc.)
-        .authenticator(tokenAuthenticator)        // попытаться получить новый access токен через refresh токен
-        .addInterceptor(networkStatusInterceptor) // intercept network status
-        .addInterceptor(httpLoggingInterceptor)                    // log requests/results
-        .addInterceptor(errorStatusInterceptor)   // intercept network errors
-        .build()
+    ): OkHttpClient =
+        OkHttpClient()
+            .newBuilder()
+            .readTimeout(2, TimeUnit.SECONDS)    // socket timeout (GET)
+            .writeTimeout(5, TimeUnit.SECONDS)   // socket timeout (POST, PUT, etc.)
+            .authenticator(tokenAuthenticator)        // попытаться получить новый access токен через refresh токен
+            .addInterceptor(networkStatusInterceptor) // intercept network status
+            .addInterceptor(logging)                    // log requests/results
+            .addInterceptor(errorStatusInterceptor)   // intercept network errors
+            .build()
+
+
+    // Нижеследующие функции принимают как параметры необходимые сущности для создания интерцепторов
+    @Provides
+    @Singleton
+    fun provideNetworkStatusInterceptor(monitor: NetworkMonitor): NetworkStatusInterceptor = NetworkStatusInterceptor(monitor)
 
     @Provides
-     fun provideNetworkStatusInterceptor(): NetworkStatusInterceptor = NetworkStatusInterceptor()
+    @Singleton
+    fun provideErrorStatusInterceptor(moshi: Moshi): ErrorStatusInterceptor = ErrorStatusInterceptor(moshi)
+
+    @Provides
+    @Singleton
+    fun provideTokenAuthenticator(prefs: PrefManager, lazyApi: Lazy<RestService>): TokenAuthenticator =
+        TokenAuthenticator(prefs, lazyApi)
+
+    @Provides
+    @Singleton
+    //json converter
+    fun provideMoshi(): Moshi =
+        Moshi.Builder()
+            .add(DateAdapter())
+            .add(KotlinJsonAdapterFactory()) // for reflection
+            .build()
+
 
 }

@@ -8,6 +8,7 @@ import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.remote.NetworkMonitor
 import ru.skillbranch.skillarticles.di.components.AppComponent
 import ru.skillbranch.skillarticles.di.components.DaggerAppComponent
+import ru.skillbranch.skillarticles.di.modules.NetworkModule
 import ru.skillbranch.skillarticles.di.modules.NetworkUtilsModule
 import ru.skillbranch.skillarticles.di.modules.PreferencesModule
 import javax.inject.Inject
@@ -21,8 +22,6 @@ class App : Application() { // В манифесте указываем его �
             return instance!!.applicationContext //
         }
     }
-
-
 
     @Inject
     lateinit var monitor: NetworkMonitor

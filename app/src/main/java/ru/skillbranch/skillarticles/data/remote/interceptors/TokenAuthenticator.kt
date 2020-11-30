@@ -5,17 +5,19 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
 import ru.skillbranch.skillarticles.data.local.PrefManager
-import ru.skillbranch.skillarticles.data.remote.NetworkManager
+import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.req.RefreshReq
+import dagger.Lazy
 
-class TokenAuthenticator : Authenticator {
-    private val prefs = PrefManager
-    private val api by lazy { NetworkManager.api }
+class TokenAuthenticator(
+    val prefs: PrefManager,
+    val lazyApi: Lazy<RestService> // Будет заинжекчен в момент первого обращения, Lazy - именно Dagger компонент, а не котлина!
+    ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
         return if (response.code != 401) null
         else{
-            val res = api.refreshAccessToken(RefreshReq( prefs.refreshToken)).execute()
+            val res = lazyApi.get().refreshAccessToken(RefreshReq( prefs.refreshToken)).execute()
 
             return if(!res.isSuccessful) null
             else {

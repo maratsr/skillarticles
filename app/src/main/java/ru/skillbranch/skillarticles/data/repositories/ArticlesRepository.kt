@@ -10,14 +10,13 @@ import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.ArticleTagXRef
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.data.local.entities.Tag
-import ru.skillbranch.skillarticles.data.remote.NetworkManager
 import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
 import ru.skillbranch.skillarticles.extensions.data.toCategory
 
-interface IArticlesRepository {
+interface IArticlesRepository: IRepository {
     suspend fun loadArticlesFromNetwork(start: String? = null, size: Int = 10): Int
     suspend fun insertArticlesToDb(articles: List<ArticleRes>)
     suspend fun toggleBookmark(articleId: String): Boolean
@@ -28,7 +27,7 @@ interface IArticlesRepository {
     suspend fun removeArticleContent(articleId: String)
 }
 
-object ArticlesRepository: IArticlesRepository{
+class ArticlesRepository: IArticlesRepository{
     private val network = NetworkManager.api
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)

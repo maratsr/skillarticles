@@ -5,6 +5,8 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.Lazy
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ApplicationComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -22,6 +24,7 @@ import javax.inject.Singleton
 
 // Многие предоставляемые сущности - глобально видимые и в одном экземпляре - потому ставим им @Singleton
 @Module
+@InstallIn(ApplicationComponent::class) // Все нижеописанное будет установлено в ApplicationComponent
 object NetworkModule {
 
     @Provides

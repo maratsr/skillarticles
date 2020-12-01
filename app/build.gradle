@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android-extensions'
     id 'androidx.navigation.safeargs.kotlin'
     id 'kotlin-kapt'
-//    id 'dagger.hilt.android.plugin'
+    id 'dagger.hilt.android.plugin'
     id "scabbard.gradle"
 }
 apply from: "../versions.gradle"
@@ -119,6 +119,11 @@ dependencies {
     // Dagger + Hilt
     implementation "com.google.dagger:dagger:$dagger_version"
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
+
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$hilt_vm_version"
+    kapt "androidx.hilt:hilt-compiler:$hilt_vm_version"
 //    implementation "com.google.dagger:hilt-android:$hilt_version"
 //    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 //    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$androidx_hilt"

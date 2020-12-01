@@ -23,5 +23,5 @@ ext {
     lottieVersion = '3.5.0'
     hilt_version = '2.29.1-alpha'
     dagger_version = "2.29.1"
-    androidx_hilt = "1.0.0-alpha02"
+    hilt_vm_version = "1.0.0-alpha02"
 }

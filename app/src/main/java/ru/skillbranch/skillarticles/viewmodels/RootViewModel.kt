@@ -1,5 +1,7 @@
 package ru.skillbranch.skillarticles.viewmodels
 
+import androidx.hilt.Assisted
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
 import ru.skillbranch.skillarticles.R
 import ru.skillbranch.skillarticles.data.repositories.RootRepository
@@ -7,8 +9,11 @@ import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
 import ru.skillbranch.skillarticles.viewmodels.base.IViewModelState
 import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 
-class RootViewModel(handle: SavedStateHandle) : BaseViewModel<RootState>(handle, RootState()) {
-    private val repository: RootRepository = RootRepository
+class RootViewModel @ViewModelInject constructor( // Через Hilt работаем
+    @Assisted handle: SavedStateHandle, // Важно чтобы был import androidx.hilt.Assisted (рантайм SavedStateHandle передаем)
+    private val repository: RootRepository,
+) : BaseViewModel<RootState>(handle, RootState()) {
+    //     private val repository: RootRepository = RootRepository
     private val privateRoutes = listOf(R.id.nav_profile)
 
     init {

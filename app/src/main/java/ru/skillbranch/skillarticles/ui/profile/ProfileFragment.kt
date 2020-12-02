@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -22,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.savedstate.SavedStateRegistryOwner
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions.circleCropTransform
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,30 +43,12 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+@AndroidEntryPoint
 class ProfileFragment() : BaseFragment<ProfileViewModel>() {
 
-
-    // for testing
-    private lateinit var resultRegistry: ActivityResultRegistry
-    var _mockFactory: ((SavedStateRegistryOwner) -> ViewModelProvider.Factory)? = null
-
-    override val viewModel: ProfileViewModel by viewModels {
-        _mockFactory?.invoke(this) ?: defaultViewModelProviderFactory
-    }
-
+    override val viewModel: ProfileViewModel by activityViewModels()
     override val layout: Int = R.layout.fragment_profile
     override val binding: ProfileBinding by lazy { ProfileBinding() }
-
-    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
-    constructor(
-        mockRoot: RootActivity,
-        testRegistry: ActivityResultRegistry? = null,
-        mockFactory: ((SavedStateRegistryOwner) -> ViewModelProvider.Factory)? = null
-    ) : this() {
-        _mockRoot = mockRoot
-        _mockFactory = mockFactory
-        if (testRegistry != null) resultRegistry = testRegistry
-    }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     lateinit var permissionsLauncher: ActivityResultLauncher<Array<out String>>
@@ -84,7 +68,7 @@ class ProfileFragment() : BaseFragment<ProfileViewModel>() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
 
-        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+        val resultRegistry = requireActivity().activityResultRegistry
         permissionsLauncher = registerForActivityResult( RequestMultiplePermissions(), resultRegistry, ::callbackPermissions)
         cameraLauncher = registerForActivityResult(TakePicture(), resultRegistry, ::callbackCamera)
         galleryLauncher = registerForActivityResult(GetContent(), resultRegistry, ::callbackGallery)

@@ -1,10 +1,8 @@
 package ru.skillbranch.skillarticles.data.repositories
 
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.ItemKeyedDataSource
-import ru.skillbranch.skillarticles.data.local.DbManager.db
 import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.local.dao.*
 import ru.skillbranch.skillarticles.data.local.entities.ArticleFull
@@ -15,10 +13,11 @@ import ru.skillbranch.skillarticles.data.remote.req.MessageReq
 import ru.skillbranch.skillarticles.data.remote.res.CommentRes
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import java.lang.Thread.sleep
+import javax.inject.Inject
 
 // Singleton репозиторий - эмуляция получения данных
 
-interface IArticleRepository {
+interface IArticleRepository: IRepository {
     fun findArticle(articleId: String): LiveData<ArticleFull> //
     fun getAppSettings(): LiveData<AppSettings> //
     suspend fun toggleLike(articleId: String) : Boolean //
@@ -33,36 +32,16 @@ interface IArticleRepository {
     fun findArticleCommentCount(articleId: String): LiveData<Int> //
 }
 
-object ArticleRepository : IArticleRepository{
-    private val network = NetworkManager.api
-    private val preferences = PrefManager
+class ArticleRepository @Inject constructor(
+    private val network: RestService,
+    private val preferences: PrefManager,
+    private val articleDao: ArticlesDao,
+    private val articlePersonalDao: ArticlePersonalInfosDao,
+    private val articleCountsDao: ArticleCountsDao,
+    private val articleContentDao: ArticleContentsDao
+) : IArticleRepository {
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var articlesDao = db.articlesDao()
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var articlePersonalDao = db.articlePersonalInfosDao()
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var articleCountsDao = db.articleCountsDao()
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var articleContentDao = db.articleContentsDao()
-
-    fun setupTestDao(
-        articlesDao: ArticlesDao,
-        articleCountsDao: ArticleCountsDao,
-        articleContentDao: ArticleContentsDao,
-        articlePersonalDao: ArticlePersonalInfosDao
-    ) {
-        this.articlesDao = articlesDao
-        this.articleCountsDao = articleCountsDao
-        this.articleContentDao = articleContentDao
-        this.articlePersonalDao = articlePersonalDao
-    }
-
-
-    override fun findArticle(articleId: String): LiveData<ArticleFull> = articlesDao.findFullArticle(articleId)
+    override fun findArticle(articleId: String): LiveData<ArticleFull> = articleDao.findFullArticle(articleId)
 
     override fun getAppSettings(): LiveData<AppSettings> = preferences.appSettings
 

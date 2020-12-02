@@ -1,20 +1,21 @@
 package ru.skillbranch.skillarticles.data.repositories
 
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.sqlite.db.SimpleSQLiteQuery
-import ru.skillbranch.skillarticles.data.local.DbManager.db
+import ru.skillbranch.skillarticles.data.local.PrefManager
 import ru.skillbranch.skillarticles.data.local.dao.*
 import ru.skillbranch.skillarticles.data.local.entities.ArticleItem
 import ru.skillbranch.skillarticles.data.local.entities.ArticleTagXRef
 import ru.skillbranch.skillarticles.data.local.entities.CategoryData
 import ru.skillbranch.skillarticles.data.local.entities.Tag
+import ru.skillbranch.skillarticles.data.remote.RestService
 import ru.skillbranch.skillarticles.data.remote.res.ArticleRes
 import ru.skillbranch.skillarticles.extensions.data.toArticle
 import ru.skillbranch.skillarticles.extensions.data.toArticleContent
 import ru.skillbranch.skillarticles.extensions.data.toArticleCounts
 import ru.skillbranch.skillarticles.extensions.data.toCategory
+import javax.inject.Inject
 
 interface IArticlesRepository: IRepository {
     suspend fun loadArticlesFromNetwork(start: String? = null, size: Int = 10): Int
@@ -27,42 +28,16 @@ interface IArticlesRepository: IRepository {
     suspend fun removeArticleContent(articleId: String)
 }
 
-class ArticlesRepository: IArticlesRepository{
-    private val network = NetworkManager.api
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var articlesDao = db.articlesDao()
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var articleCountsDao = db.articleCountsDao()
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var categoriesDao = db.categoriesDao()
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var tagsDao = db.tagsDao()
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var articlePersonalInfosDao = db.articlePersonalInfosDao()
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    var articlesContentDao = db.articleContentsDao()
-
-    fun setupTestDao(
-        articlesDao: ArticlesDao,
-        articleCountsDao: ArticleCountsDao,
-        categoriesDao: CategoriesDao,
-        tagsDao: TagsDao,
-        articlePersonalDao: ArticlePersonalInfosDao,
-        articlesContentDao: ArticleContentsDao
-    ) {
-        this.articlesDao = articlesDao // Замена val свойств на var в ArticlesRepository и убрал private
-        this.articleCountsDao = articleCountsDao
-        this.categoriesDao = categoriesDao
-        this.tagsDao = tagsDao
-        this.articlePersonalInfosDao = articlePersonalDao
-        this.articlesContentDao = articlesContentDao
-    }
+class ArticlesRepository  @Inject constructor(
+    private val network: RestService,
+    private val prefs: PrefManager,
+    private val articlesDao: ArticlesDao,
+    private val articlesCountsDao: ArticleCountsDao,
+    private val articlesContentDao: ArticleContentsDao,
+    private val categoriesDao: CategoriesDao,
+    private val tagsDao: TagsDao,
+    private val articlesPersonalDao: ArticlePersonalInfosDao
+) : IArticlesRepository{
 
     override suspend fun loadArticlesFromNetwork(start: String?, size: Int): Int {
         val items = network.articles(start, size)
@@ -72,7 +47,7 @@ class ArticlesRepository: IArticlesRepository{
 
     override suspend fun insertArticlesToDb(articles: List<ArticleRes>) {
         articlesDao.upsert(articles.map{ it.data.toArticle() })
-        articleCountsDao.upsert(articles.map{ it.counts.toArticleCounts() })
+        articlesCountsDao.upsert(articles.map{ it.counts.toArticleCounts() })
 
         val refs = articles.map { it.data }
             .fold(mutableListOf<Pair<String,String>>()) {acc, res ->
@@ -90,7 +65,7 @@ class ArticlesRepository: IArticlesRepository{
         tagsDao.insertRefs(refs.map { ArticleTagXRef(it.first, it.second) })
     }
 
-    override suspend fun toggleBookmark(articleId: String): Boolean = articlePersonalInfosDao.toggleBookmarkOrInsert(articleId)
+    override suspend fun toggleBookmark(articleId: String): Boolean = articlesPersonalDao.toggleBookmarkOrInsert(articleId)
 
     override fun findTags(): LiveData<List<String>> = tagsDao.findTags()
 

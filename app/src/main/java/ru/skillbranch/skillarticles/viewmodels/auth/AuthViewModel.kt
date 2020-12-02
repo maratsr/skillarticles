@@ -1,5 +1,7 @@
 package ru.skillbranch.skillarticles.viewmodels.auth
 
+import androidx.hilt.Assisted
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.SavedStateHandle
 import ru.skillbranch.skillarticles.data.repositories.RootRepository
 import ru.skillbranch.skillarticles.viewmodels.base.BaseViewModel
@@ -8,7 +10,10 @@ import ru.skillbranch.skillarticles.viewmodels.base.NavigationCommand
 import ru.skillbranch.skillarticles.viewmodels.base.Notify
 
 
-class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle, AuthState()), IAuthViewModel{
+class AuthViewModel @ViewModelInject constructor(
+    @Assisted handle: SavedStateHandle,
+    private val repository: RootRepository,
+) : BaseViewModel<AuthState>(handle, AuthState()), IAuthViewModel {
 
     companion object { //static class consts
         val REGEX_NAME_CHECK="^[а-яА-Яa-zA-Z0-9_.-]{3,}\$".toRegex()
@@ -23,8 +28,6 @@ class AuthViewModel(handle: SavedStateHandle) : BaseViewModel<AuthState>(handle,
         val INVALID_BLANK_FIELD = "Name, login, password it is required fields and not must be empty"
 
     }
-
-    private val repository = RootRepository
 
     init {
         subscribeOnDataSource(repository.isAuth()){isAuth, state ->
